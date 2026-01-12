@@ -8,11 +8,13 @@ import { Accounts } from "./pages/Accounts";
 import Transactions from "./pages/Transactions";
 import { Budgets } from "./pages/Budgets";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Topbar from "./components/layout/Topbar";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+          <Topbar />
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
