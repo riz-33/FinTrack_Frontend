@@ -8,13 +8,13 @@ import {
   MenuItems,
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import Logo from "../../assets/logo2.png";
+import Logo from "../../assets/logo3.png";
 
 const navigation = [
-  { name: "Dashboard", href: "#", current: false },
-  { name: "Team", href: "#", current: false },
-  { name: "Projects", href: "#", current: false },
-  { name: "Calendar", href: "#", current: false },
+  { name: "Dashboard", href: "/dashboard", current: true },
+  { name: "Accounts", href: "/accounts", current: false },
+  { name: "Transactions", href: "/transactions", current: false },
+  { name: "Budgets", href: "/budgets", current: false },
 ];
 
 function classNames(...classes) {
@@ -25,7 +25,7 @@ export default function Topbar() {
   return (
     <Disclosure
       as="nav"
-      className="relative bg-gray-800 dark:bg-gray-800/50 dark:after:pointer-events-none dark:after:absolute dark:after:inset-x-0 dark:after:bottom-0 dark:after:h-px dark:after:bg-white/10"
+      className="relative bg-[#0B1220] border-b border-white/10"
     >
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
         <div className="relative flex h-16 items-center justify-between">
@@ -49,7 +49,11 @@ export default function Topbar() {
             className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start"
           >
             <div className="flex shrink-0 items-center">
-              <img alt="Your Company" src={Logo} className="h-20 w-20" />
+              <img
+                alt="Your Company"
+                src={Logo}
+                className="h-10 w-auto drop-shadow-sm"
+              />
             </div>
             <div className="hidden sm:ml-6 sm:block">
               <div className="flex space-x-4">
@@ -60,7 +64,7 @@ export default function Topbar() {
                     aria-current={item.current ? "page" : undefined}
                     className={classNames(
                       item.current
-                        ? "bg-gray-900 text-white dark:bg-gray-950/50"
+                        ? "bg-blue-600/20 text-white"
                         : "text-gray-300 hover:bg-white/5 hover:text-white",
                       "rounded-md px-3 py-2 text-sm font-medium"
                     )}
@@ -83,7 +87,7 @@ export default function Topbar() {
 
             {/* Profile dropdown */}
             <Menu as="div" className="relative ml-3">
-              <MenuButton className="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+              <MenuButton className="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-blue-500">
                 <span className="absolute -inset-1.5" />
                 <span className="sr-only">Open user menu</span>
                 <img
@@ -127,7 +131,7 @@ export default function Topbar() {
         </div>
       </div>
 
-      <DisclosurePanel className="sm:hidden">
+      <DisclosurePanel className="sm:hidden bg-[#0B1220] border-t border-white/10">
         <div className="space-y-1 px-2 pt-2 pb-3">
           {navigation.map((item) => (
             <DisclosureButton
@@ -137,7 +141,7 @@ export default function Topbar() {
               aria-current={item.current ? "page" : undefined}
               className={classNames(
                 item.current
-                  ? "bg-gray-900 text-white dark:bg-gray-950/50"
+                  ? "bg-blue-600/20 text-white"
                   : "text-gray-300 hover:bg-white/5 hover:text-white",
                 "block rounded-md px-3 py-2 text-base font-medium"
               )}

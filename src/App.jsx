@@ -1,13 +1,13 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 
-import { Login } from "./pages/Login";
-import { Register } from "./pages/Register";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import { Accounts } from "./pages/Accounts";
 import Transactions from "./pages/Transactions";
 import { Budgets } from "./pages/Budgets";
-import ProtectedRoute from "./components/ProtectedRoute";
+// import ProtectedRoute from "./components/ProtectedRoute";
 import Topbar from "./components/layout/Topbar";
 
 function App() {
@@ -21,33 +21,33 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
+              // <ProtectedRoute>
+              <Dashboard />
+              // </ProtectedRoute>
             }
           />
           <Route
             path="/accounts"
             element={
-              <ProtectedRoute>
-                <Accounts />
-              </ProtectedRoute>
+              // <ProtectedRoute>
+              <Accounts />
+              // </ProtectedRoute>
             }
           />
           <Route
             path="/transactions"
             element={
-              <ProtectedRoute>
-                <Transactions />
-              </ProtectedRoute>
+              // <ProtectedRoute>
+              <Transactions />
+              // </ProtectedRoute>
             }
           />
           <Route
             path="/budgets"
             element={
-              <ProtectedRoute>
-                <Budgets />
-              </ProtectedRoute>
+              // <ProtectedRoute>
+              <Budgets />
+              // </ProtectedRoute>
             }
           />
         </Routes>
