@@ -8,48 +8,50 @@ import { Accounts } from "./pages/Accounts";
 import Transactions from "./pages/Transactions";
 import { Budgets } from "./pages/Budgets";
 // import ProtectedRoute from "./components/ProtectedRoute";
-import Topbar from "./components/layout/Topbar";
+import AppLayout from "./components/layout/AppLayout";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-          <Topbar />
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route
-            path="/dashboard"
-            element={
-              // <ProtectedRoute>
-              <Dashboard />
-              // </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/accounts"
-            element={
-              // <ProtectedRoute>
-              <Accounts />
-              // </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/transactions"
-            element={
-              // <ProtectedRoute>
-              <Transactions />
-              // </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/budgets"
-            element={
-              // <ProtectedRoute>
-              <Budgets />
-              // </ProtectedRoute>
-            }
-          />
+
+          <Route element={<AppLayout />}>
+            <Route
+              path="/dashboard"
+              element={
+                // <ProtectedRoute>
+                <Dashboard />
+                // </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/accounts"
+              element={
+                // <ProtectedRoute>
+                <Accounts />
+                // </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/transactions"
+              element={
+                // <ProtectedRoute>
+                <Transactions />
+                // </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/budgets"
+              element={
+                // <ProtectedRoute>
+                <Budgets />
+                // </ProtectedRoute>
+              }
+            />
+          </Route>
         </Routes>
       </BrowserRouter>
     </AuthProvider>
