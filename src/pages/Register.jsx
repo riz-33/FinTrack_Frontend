@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import api from "../services/api";
-import Logo from "../assets/logo2.png";
+import Logo from "../assets/logo4.png";
 import { Link, useNavigate } from "react-router-dom";
 import { Alert, Snackbar, CircularProgress } from "@mui/material";
 
@@ -60,8 +60,8 @@ export default function Register() {
       </Snackbar>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <img alt="FinTrack Logo" src={Logo} className="mx-auto h-50 w-80" />
-        <h2 className="text-center text-2xl font-bold tracking-tight text-white">
+        <img alt="FinTrack Logo" src={Logo} className="mx-auto h-40 w-80" />
+        <h2 className="mt-3 text-center text-2xl font-bold tracking-tight text-white">
           Create your account
         </h2>
       </div>

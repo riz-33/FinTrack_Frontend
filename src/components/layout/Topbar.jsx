@@ -10,6 +10,8 @@ import {
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Logo from "../../assets/logo3.png";
 import { NavLink } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", current: true },
@@ -23,6 +25,13 @@ function classNames(...classes) {
 }
 
 export default function Topbar() {
+  const { logout } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    logout();
+    window.location.href = "/";
+  };
+
   return (
     <Disclosure
       as="nav"
@@ -120,6 +129,7 @@ export default function Topbar() {
                 </MenuItem>
                 <MenuItem>
                   <a
+                    onClick={handleLogout}
                     href="#"
                     className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden dark:text-gray-300 dark:data-focus:bg-white/5"
                   >

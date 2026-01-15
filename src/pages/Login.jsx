@@ -1,14 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import api from "../services/api";
-import Logo from "../assets/logo2.png";
+import Logo from "../assets/logo4.png";
+import { AuthContext } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { Alert, Snackbar, CircularProgress } from "@mui/material";
 
 export default function Login() {
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState({ type: "success", msg: "" });
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -29,6 +32,7 @@ export default function Login() {
 
     try {
       const res = await api.post("/auth/login", formData);
+      login(res.data);
       setStatus({ type: "success", msg: "Login successful!" });
       setOpen(true);
       setTimeout(() => {
@@ -58,8 +62,8 @@ export default function Login() {
         </Alert>
       </Snackbar>
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <img alt="FinTrack Logo" src={Logo} className="mx-auto h-50 w-80" />
-        <h2 className="text-center text-2xl font-bold tracking-tight text-white">
+        <img alt="FinTrack Logo" src={Logo} className="mx-auto h-40 w-80" />
+        <h2 className="mt-7 text-center text-2xl font-bold tracking-tight text-white">
           Sign in to your account
         </h2>
       </div>
