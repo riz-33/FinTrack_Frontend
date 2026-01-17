@@ -13,6 +13,7 @@ import Transactions from "./pages/Transactions";
 import CreateTransaction from "./pages/CreateTransaction";
 import Budgets from "./pages/Budgets";
 import CreateBudget from "./pages/CreateBudget";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
             <Route path="/transactions/add" element={<CreateTransaction />} />
             <Route path="/budgets" element={<Budgets />} />
             <Route path="/budgets/add" element={<CreateBudget />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Routes>
       </BrowserRouter>

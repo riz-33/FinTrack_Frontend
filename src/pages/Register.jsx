@@ -54,7 +54,11 @@ export default function Register() {
         onClose={() => setOpen(false)}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert severity={status.type} variant="filled">
+        <Alert
+          severity={status.type}
+          variant="filled"
+          style={{ width: "250px" }}
+        >
           {status.msg}
         </Alert>
       </Snackbar>

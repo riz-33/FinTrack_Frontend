@@ -35,9 +35,9 @@ export default function Login() {
       login(res.data);
       setStatus({ type: "success", msg: "Login successful!" });
       setOpen(true);
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1500);
+      // setTimeout(() => {
+        // navigate("/dashboard");
+      // }, 1500);
       console.log(res.data);
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Login failed";
@@ -55,9 +55,11 @@ export default function Login() {
         open={open}
         autoHideDuration={6000}
         onClose={() => setOpen(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert severity={status.type} variant="filled">
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+        <Alert severity={status.type} variant="filled"
+        style={{ width: "250px" }}
+        >
           {status.msg}
         </Alert>
       </Snackbar>

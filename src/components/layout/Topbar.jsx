@@ -7,11 +7,19 @@ import {
   MenuItem,
   MenuItems,
 } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  BellIcon,
+  XMarkIcon,
+  SunIcon,
+  MoonIcon,
+} from "@heroicons/react/24/outline";
 import Logo from "../../assets/logo3.png";
 import { NavLink } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import { Avatar, IconButton, useTheme } from "@mui/material";
+import { ColorModeContext } from "../../context/ThemeContext";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", current: true },
@@ -25,17 +33,25 @@ function classNames(...classes) {
 }
 
 export default function Topbar() {
-  const { logout } = useContext(AuthContext);
+  const { logout, user } = useContext(AuthContext);
+  const theme = useTheme();
+  const colorMode = useContext(ColorModeContext);
 
   const handleLogout = () => {
     logout();
     window.location.href = "/";
   };
 
+  const getInitials = (name) => {
+    const names = name.split(" ");
+    const initials = names.map((n) => n.charAt(0).toUpperCase());
+    return initials.slice(0, 2).join("");
+  };
+
   return (
     <Disclosure
       as="nav"
-      className="relative w-full bg-white border-b border-gray-200"
+      className="relative w-full bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700"
     >
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
         <div className="relative flex h-16 items-center justify-between">
@@ -61,7 +77,11 @@ export default function Topbar() {
           >
             <div className="flex shrink-0 items-center cursor-pointer">
               <a href="/dashboard">
-                <img alt="FinTrack Logo" src={Logo} className="h-12 w-40" />
+                <img
+                  alt="FinTrack Logo"
+                  src={Logo}
+                  className="h-12 w-40 transition-all duration-300 dark:brightness-200 dark:grayscale dark:invert"
+                />
               </a>
             </div>
             <div className="hidden sm:ml-6 lg:block">
@@ -72,14 +92,12 @@ export default function Topbar() {
                     to={item.href}
                     // aria-current={item.current ? "page" : undefined}
                     className={({ isActive }) =>
-                      `
-                        rounded-md px-3 py-2 text-sm font-medium transition-colors
+                      `rounded-md px-3 py-2 text-sm font-medium transition-colors
                            ${
                              isActive
-                               ? "bg-blue-50 text-blue-600"
-                               : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"
-                           }
-            `
+                               ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                               : "text-gray-600 hover:bg-gray-50 hover:text-blue-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-blue-400"
+                           }`
                     }
                   >
                     {item.name}
@@ -90,34 +108,63 @@ export default function Topbar() {
           </div>
 
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            <button
-              type="button"
-              className="cursor-pointer relative rounded-full p-1 text-gray-500 hover:text-blue-600 focus:outline-none"
+            {/* Theme toggle button */}
+            <IconButton
+              onClick={colorMode.toggleColorMode}
+              color="inherit"
+              className="mr-2"
             >
-              <BellIcon aria-hidden="true" className="size-6" />
+              {theme.palette.mode === "dark" ? (
+                <SunIcon className="size-6 text-yellow-400" />
+              ) : (
+                <MoonIcon className="size-6 text-gray-800" />
+              )}
+            </IconButton>
+
+            {/* Notification Button */}
+            <button className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400">
+              <BellIcon className="size-6" />
             </button>
 
             {/* Profile dropdown */}
             <Menu as="div" className="relative ml-3">
               <MenuButton className="cursor-pointer relative flex rounded-full border border-gray-200">
-                <img
+                {/* <img
                   alt="User"
                   src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                   className="size-8 rounded-full"
-                />
+                /> */}
+
+                <Avatar
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: "#3b82f6",
+                    fontSize: 14,
+                  }}
+                >
+                  {getInitials(user?.name || "U")}
+                </Avatar>
+                <span className="sr-only">Open user menu</span>
               </MenuButton>
 
               <MenuItems
                 transition
-                className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg outline outline-black/5 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in dark:bg-gray-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10"
+                className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 transition focus:outline-none 
+             dark:bg-gray-800 dark:ring-white/10 dark:shadow-2xl"
               >
                 <MenuItem>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden dark:text-gray-300 dark:data-focus:bg-white/5"
-                  >
-                    Your profile
-                  </a>
+                  {({ focus }) => (
+                    <a
+                      href="/profile"
+                      className={classNames(
+                        focus ? "bg-gray-100 dark:bg-gray-700" : "",
+                        "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200"
+                      )}
+                    >
+                      Your profile
+                    </a>
+                  )}
                 </MenuItem>
                 <MenuItem>
                   <a
@@ -142,7 +189,7 @@ export default function Topbar() {
         </div>
       </div>
 
-      <DisclosurePanel className="lg:hidden bg-white border-gray-200 border-t ">
+      <DisclosurePanel className="lg:hidden bg-white border-t dark:bg-gray-900 dark:border-gray-700">
         <div className="space-y-1 px-2 pt-2 pb-3">
           {navigation.map((item) => (
             <DisclosureButton

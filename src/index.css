@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+@config "../tailwind.config.cjs"; /* Points to your config if you still use it */
+
+@variant dark (&:where(.dark, .dark *));
