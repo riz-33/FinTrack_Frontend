@@ -2,9 +2,49 @@ import { createContext, useState, useMemo, useEffect } from "react";
 import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
 
 export const ColorModeContext = createContext({ toggleColorMode: () => {} });
+export const CurrencyContext = createContext();
 
 export const ThemeContextProvider = ({ children }) => {
   const [mode, setMode] = useState(localStorage.getItem("theme") || "light");
+
+  const [currency, setCurrency] = useState(
+    localStorage.getItem("currency") || "USD",
+  );
+  const [rate, setRate] = useState(280); // Default fallback
+
+  useEffect(() => {
+    const fetchRate = async () => {
+      try {
+        const res = await fetch("https://open.er-api.com/v6/latest/USD");
+        const data = await res.json();
+        setRate(data.rates.PKR);
+      } catch (err) {
+        console.error("Failed to fetch rates, using fallback 280");
+      }
+    };
+    fetchRate();
+  }, []);
+
+  const toggleCurrency = () => {
+    const next = currency === "USD" ? "PKR" : "USD";
+    setCurrency(next);
+    localStorage.setItem("currency", next);
+  };
+
+  const formatValue = (value) => {
+    // 1. Convert the value based on the current rate
+    // If currency is USD, rate is 1. If PKR, it uses the state 'rate' (e.g., 280)
+    const numericRate = currency === "USD" ? 1 : rate;
+    const convertedValue = (value || 0) * numericRate;
+
+    // 2. Use Intl.NumberFormat for professional locale-aware formatting
+    return new Intl.NumberFormat(currency === "USD" ? "en-US" : "en-PK", {
+      style: "currency",
+      currency: currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(convertedValue);
+  };
 
   // Sync Tailwind class with State
   useEffect(() => {
@@ -28,7 +68,7 @@ export const ThemeContextProvider = ({ children }) => {
         });
       },
     }),
-    []
+    [],
   );
 
   const theme = useMemo(
@@ -46,15 +86,17 @@ export const ThemeContextProvider = ({ children }) => {
               }),
         },
       }),
-    [mode]
+    [mode],
   );
 
   return (
-    <ColorModeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </ThemeProvider>
-    </ColorModeContext.Provider>
+    <CurrencyContext.Provider value={{ currency, toggleCurrency, formatValue }}>
+      <ColorModeContext.Provider value={colorMode}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          {children}
+        </ThemeProvider>
+      </ColorModeContext.Provider>
+    </CurrencyContext.Provider>
   );
 };

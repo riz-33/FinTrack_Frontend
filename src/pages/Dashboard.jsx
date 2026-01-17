@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import api from "../services/api";
 import {
   Grid,
@@ -22,6 +22,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { CurrencyContext } from "../context/ThemeContext";
 
 const Dashboard = () => {
   const [summary, setSummary] = useState({});
@@ -30,6 +31,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true); // New Loading State
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === "dark";
+  const { formatValue } = useContext(CurrencyContext);
 
   const chartColors = {
     text: isDarkMode ? "#94a3b8" : "#64748b", // slate-400 vs slate-500
@@ -73,8 +75,9 @@ const Dashboard = () => {
         <Skeleton variant="text" width="60%" height={40} sx={{ mx: "auto" }} />
       ) : (
         <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-          $
-          {(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          {formatValue(value || 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+          })}
         </Typography>
       )}
     </CardContent>
@@ -254,6 +257,64 @@ const Dashboard = () => {
                       </ResponsiveContainer>
                     </div>
                   </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* New Budget Section */}
+          <Grid item xs={12} mt={2}>
+            <Card
+              variant="outlined"
+              className="dark:bg-gray-800 dark:border-gray-700"
+            >
+              <CardContent>
+                <Typography
+                  variant="h6"
+                  mb={3}
+                  className="dark:text-white font-bold"
+                >
+                  Budget Trackers
+                </Typography>
+                <Grid container spacing={4}>
+                  {pieData.slice(0, 3).map((category) => (
+                    <Grid item xs={12} md={4} key={category.name}>
+                      <div className="flex justify-between mb-1">
+                        <Typography
+                          variant="body2"
+                          className="text-gray-600 dark:text-gray-400 font-medium"
+                        >
+                          {category.name}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          className="text-gray-900 dark:text-gray-200 font-bold"
+                        >
+                          {((category.value / 1000) * 100).toFixed(0)}%{" "}
+                          {/* Assuming 1000 is the limit for now */}
+                        </Typography>
+                      </div>
+                      {/* The Actual Progress Bar */}
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                        <div
+                          className={`h-2.5 rounded-full transition-all duration-500 ${
+                            category.value / 1000 > 0.8
+                              ? "bg-red-500"
+                              : "bg-blue-600"
+                          }`}
+                          style={{
+                            width: `${Math.min((category.value / 1000) * 100, 100)}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <Typography
+                        variant="caption"
+                        className="text-gray-500 mt-1 block"
+                      >
+                        ${category.value} spent of $1,000 limit
+                      </Typography>
+                    </Grid>
+                  ))}
                 </Grid>
               </CardContent>
             </Card>

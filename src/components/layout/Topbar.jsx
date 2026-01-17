@@ -20,6 +20,7 @@ import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { Avatar, IconButton, useTheme } from "@mui/material";
 import { ColorModeContext } from "../../context/ThemeContext";
+import { CurrencyContext } from "../../context/ThemeContext";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", current: true },
@@ -36,6 +37,7 @@ export default function Topbar() {
   const { logout, user } = useContext(AuthContext);
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
+  const { currency, toggleCurrency } = useContext(CurrencyContext);
 
   const handleLogout = () => {
     logout();
@@ -51,7 +53,7 @@ export default function Topbar() {
   return (
     <Disclosure
       as="nav"
-      className="relative w-full bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700"
+      className="relative w-full bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 transition-colors duration-300"
     >
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
         <div className="relative flex h-16 items-center justify-between">
@@ -121,6 +123,13 @@ export default function Topbar() {
               )}
             </IconButton>
 
+            <button
+              onClick={toggleCurrency}
+              className="mx-2 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-xs font-bold dark:text-white"
+            >
+              {currency}
+            </button>
+
             {/* Notification Button */}
             <button className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400">
               <BellIcon className="size-6" />
@@ -159,7 +168,7 @@ export default function Topbar() {
                       href="/profile"
                       className={classNames(
                         focus ? "bg-gray-100 dark:bg-gray-700" : "",
-                        "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200"
+                        "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200",
                       )}
                     >
                       Your profile
@@ -201,7 +210,7 @@ export default function Topbar() {
                 item.current
                   ? "bg-blue-50 text-blue-600"
                   : "text-gray-600 hover:bg-gray-50 hover:text-blue-600",
-                "block rounded-md px-3 py-2 text-base font-medium"
+                "block rounded-md px-3 py-2 text-base font-medium",
               )}
             >
               {item.name}
