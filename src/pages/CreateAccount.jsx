@@ -11,6 +11,7 @@ import {
   MenuItem,
   Grid,
   InputAdornment,
+  FilledInput,
 } from "@mui/material";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
@@ -19,6 +20,13 @@ const accountTypes = [
   { value: "savings", label: "Savings/Investment" },
   { value: "cash", label: "Cash/Wallet" },
   { value: "credit", label: "Credit Card" },
+];
+
+const currencyOptions = [
+  { value: "USD", label: "US Dollar (USD)" },
+  { value: "EUR", label: "Euro (EUR)" },
+  { value: "GBP", label: "British Pound (GBP)" },
+  { value: "PKR", label: "Pakistani Rupee (PKR)" },
 ];
 
 const CreateAccount = () => {
@@ -32,6 +40,7 @@ const CreateAccount = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Submitting form data:", formData);
     try {
       await api.post("/accounts", formData);
       navigate("/accounts"); // Go back to list after success
@@ -41,7 +50,7 @@ const CreateAccount = () => {
   };
 
   return (
-    <Box className="max-w-2xl mx-auto">
+    <Box className="max-w-3xl mx-auto ">
       {/* Back Button */}
       <Button
         startIcon={<ArrowLeftIcon className="h-4 w-4" />}
@@ -62,8 +71,9 @@ const CreateAccount = () => {
 
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={6} item xs={12}>
                 <TextField
+                  size="small"
                   fullWidth
                   label="Account Name"
                   placeholder="e.g. HBL Main Account or Pocket Cash"
@@ -75,9 +85,11 @@ const CreateAccount = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={6} item xs={12} md={6}>
                 <TextField
                   select
+                  size="small"
+                  required
                   fullWidth
                   label="Account Type"
                   value={formData.type}
@@ -93,12 +105,13 @@ const CreateAccount = () => {
                 </TextField>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={6} item xs={12} md={6}>
                 <TextField
                   fullWidth
+                  size="small"
+                  required
                   label="Initial Balance"
                   type="number"
-                  required
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">$</InputAdornment>
@@ -111,18 +124,38 @@ const CreateAccount = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} className="mt-4">
-                <Button
-                  type="submit"
-                  variant="contained"
+              <Grid size={6} item xs={12} md={6}>
+                <TextField
+                  size="small"
+                  select
+                  required
                   fullWidth
-                  size="large"
-                  sx={{ py: 1.5, borderRadius: 2 }}
+                  label="Currency"
+                  value={formData.currency}
+                  onChange={(e) =>
+                    setFormData({ ...formData, currency: e.target.value })
+                  }
                 >
-                  Create Account
-                </Button>
+                  {currencyOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
             </Grid>
+
+            <div className="flex justify-center mt-6">
+              <Button
+                type="submit"
+                variant="contained"
+                // fullWidth
+                // size="large"
+                sx={{ borderRadius: 2 }}
+              >
+                Create Account
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

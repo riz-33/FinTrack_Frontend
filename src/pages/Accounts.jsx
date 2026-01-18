@@ -14,7 +14,8 @@ import {
   PlusIcon,
   BanknotesIcon,
   CreditCardIcon,
-  // LandmarkIcon,
+  BuildingLibraryIcon,
+  WalletIcon
 } from "@heroicons/react/24/outline";
 import EmptyState from "../components/common/EmptyState";
 import { useNavigate } from "react-router-dom";
@@ -44,11 +45,13 @@ const Accounts = () => {
   const getAccountIcon = (type) => {
     switch (type?.toLowerCase()) {
       case "bank":
-        return <LandmarkIcon className="h-6 w-6 text-blue-500" />;
+        return <BuildingLibraryIcon className="h-6 w-6 text-blue-600" />;
       case "savings":
-        return <CreditCardIcon className="h-6 w-6 text-green-500" />;
+        return <WalletIcon className="h-6 w-6 text-orange-600" />;
+      case "cash":
+        return <BanknotesIcon className="h-6 w-6 text-green-600" />;
       default:
-        return <BanknotesIcon className="h-6 w-6 text-gray-500" />;
+        return <CreditCardIcon className="h-6 w-6 text-gray-600" />;
     }
   };
 
@@ -90,7 +93,7 @@ const Accounts = () => {
       ) : (
         <Grid container spacing={3}>
           {accounts.map((acc) => (
-            <Grid item xs={12} sm={6} md={4} key={acc._id}>
+            <Grid size={4} item xs={12} sm={6} md={4} key={acc._id}>
               <Card
                 variant="outlined"
                 sx={{
@@ -139,7 +142,8 @@ const Accounts = () => {
                       Current Balance
                     </Typography>
                     <Typography variant="h6" color="primary" fontWeight="bold">
-                      ${acc.balance?.toLocaleString()}
+                      {acc.currency?.toUpperCase()}{" "}
+                      {acc.balance?.toLocaleString()}
                     </Typography>
                   </Box>
                 </CardContent>
