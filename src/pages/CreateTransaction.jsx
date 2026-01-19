@@ -13,22 +13,29 @@ import {
   InputAdornment,
   ToggleButton,
   ToggleButtonGroup,
+  Alert,
+  Snackbar,
+  CircularProgress,
 } from "@mui/material";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
-const categories = [
+const categoriesExpense = [
   "Food",
   "Rent",
   "Transport",
-  "Salary",
   "Shopping",
   "Entertainment",
   "Bills",
   "Others",
 ];
 
+const categoriesIncome = ["Salary", "Business", "Investment", "Gift", "Others"];
+
 const CreateTransaction = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState({ type: "success", msg: "" });
   const [accounts, setAccounts] = useState([]);
   const [formData, setFormData] = useState({
     description: "",
@@ -46,22 +53,48 @@ const CreateTransaction = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setStatus({ type: "success", msg: "Transaction created successfully!" });
+    setLoading(true);
+    console.log("Submitting form data:", formData);
     try {
       await api.post("/transactions", formData);
-      navigate("/transactions");
+      setOpen(true);
+      // setTimeout(() => {
+      // navigate("/transactions");
+      // }, 1500);
     } catch (error) {
-      console.error("Error saving transaction:", error);
+      const errorMsg =
+        error.response?.data?.message || "Transaction creation failed";
+      setStatus({ type: "error", msg: errorMsg });
+      setOpen(true);
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Box className="max-w-2xl mx-auto">
+    <Box sx={{ width: 700 }} className=" mx-auto">
+      <Snackbar
+        open={open}
+        autoHideDuration={6000}
+        onClose={() => setOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          severity={status.type}
+          variant="filled"
+          style={{ marginTop: "50px" }}
+        >
+          {status.msg}
+        </Alert>
+      </Snackbar>
       <Button
         startIcon={<ArrowLeftIcon className="h-4 w-4" />}
         onClick={() => navigate("/transactions")}
         className="mb-4 text-gray-500"
       >
-        Back
+        Back to Transactions
       </Button>
 
       <Card variant="outlined" sx={{ borderRadius: 3 }}>
@@ -73,7 +106,7 @@ const CreateTransaction = () => {
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               {/* Income/Expense Toggle */}
-              <Grid item xs={12} className="flex justify-center">
+              <Grid size={12} item xs={12} className="flex justify-center">
                 <ToggleButtonGroup
                   value={formData.type}
                   exclusive
@@ -83,21 +116,22 @@ const CreateTransaction = () => {
                   fullWidth
                   color={formData.type === "income" ? "success" : "error"}
                 >
-                  <ToggleButton value="expense" sx={{ flex: 1 }}>
+                  <ToggleButton size="small" value="expense" sx={{ flex: 1 }}>
                     Expense
                   </ToggleButton>
-                  <ToggleButton value="income" sx={{ flex: 1 }}>
+                  <ToggleButton size="small" value="income" sx={{ flex: 1 }}>
                     Income
                   </ToggleButton>
                 </ToggleButtonGroup>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12} item xs={12}>
                 <TextField
+                  size="small"
                   fullWidth
                   label="Description"
                   required
-                  placeholder="e.g. Weekly Groceries"
+                  // placeholder="e.g. Weekly Groceries"
                   value={formData.description}
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
@@ -105,17 +139,18 @@ const CreateTransaction = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={6} item xs={12} md={6}>
                 <TextField
                   fullWidth
+                  size="small"
                   label="Amount"
                   type="number"
                   required
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">$</InputAdornment>
-                    ),
-                  }}
+                  // InputProps={{
+                  //   startAdornment: (
+                  //     <InputAdornment position="start">$</InputAdornment>
+                  //   ),
+                  // }}
                   value={formData.amount}
                   onChange={(e) =>
                     setFormData({ ...formData, amount: e.target.value })
@@ -123,9 +158,10 @@ const CreateTransaction = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={6} item xs={12} md={6}>
                 <TextField
                   select
+                  size="small"
                   fullWidth
                   label="Account"
                   required
@@ -136,15 +172,16 @@ const CreateTransaction = () => {
                 >
                   {accounts.map((acc) => (
                     <MenuItem key={acc._id} value={acc._id}>
-                      {acc.name} (${acc.balance})
+                      {acc.name} ({acc.balance})
                     </MenuItem>
                   ))}
                 </TextField>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={6} item xs={12} md={6}>
                 <TextField
                   select
+                  size="small"
                   fullWidth
                   label="Category"
                   required
@@ -153,17 +190,24 @@ const CreateTransaction = () => {
                     setFormData({ ...formData, category: e.target.value })
                   }
                 >
-                  {categories.map((cat) => (
-                    <MenuItem key={cat} value={cat}>
-                      {cat}
-                    </MenuItem>
-                  ))}
+                  {formData.type === "income"
+                    ? categoriesIncome.map((cat) => (
+                        <MenuItem key={cat} value={cat}>
+                          {cat}
+                        </MenuItem>
+                      ))
+                    : categoriesExpense.map((cat) => (
+                        <MenuItem key={cat} value={cat}>
+                          {cat}
+                        </MenuItem>
+                      ))}
                 </TextField>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={6} item xs={12} md={6}>
                 <TextField
                   fullWidth
+                  size="small"
                   type="date"
                   label="Date"
                   InputLabelProps={{ shrink: true }}
@@ -173,20 +217,20 @@ const CreateTransaction = () => {
                   }
                 />
               </Grid>
-
-              <Grid item xs={12}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  fullWidth
-                  size="large"
-                  color={formData.type === "income" ? "success" : "primary"}
-                  sx={{ py: 1.5, mt: 2 }}
-                >
-                  Save {formData.type}
-                </Button>
-              </Grid>
             </Grid>
+
+            <div className="flex justify-center mt-6">
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={loading}
+                // size="large"
+                color={formData.type === "income" ? "success" : "primary"}
+                // sx={{ py: 1.5, mt: 2 }}
+              >
+                Save {formData.type}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

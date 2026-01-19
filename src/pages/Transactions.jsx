@@ -195,6 +195,7 @@ const Transactions = () => {
                 : "Start logging your spending."
             }
             actionLabel={searchTerm ? null : "Add Transaction"}
+            actionPath={searchTerm ? null : "/transactions/add"}
           />
         ) : (
           <div className="overflow-x-auto">

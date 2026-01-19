@@ -10,8 +10,9 @@ import {
   Button,
   MenuItem,
   Grid,
-  InputAdornment,
-  FilledInput,
+  Alert,
+  Snackbar,
+  CircularProgress,
 } from "@mui/material";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
@@ -22,15 +23,19 @@ const accountTypes = [
   { value: "credit", label: "Credit Card" },
 ];
 
-const currencyOptions = [
-  { value: "USD", label: "US Dollar (USD)" },
-  { value: "EUR", label: "Euro (EUR)" },
-  { value: "GBP", label: "British Pound (GBP)" },
-  { value: "PKR", label: "Pakistani Rupee (PKR)" },
-];
+// const currencyOptions = [
+//   { value: "USD", label: "US Dollar (USD)" },
+//   { value: "EUR", label: "Euro (EUR)" },
+//   { value: "GBP", label: "British Pound (GBP)" },
+//   { value: "PKR", label: "Pakistani Rupee (PKR)" },
+// ];
 
 const CreateAccount = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState({ type: "success", msg: "" });
+
   const [formData, setFormData] = useState({
     name: "",
     type: "bank",
@@ -40,17 +45,41 @@ const CreateAccount = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setStatus({ type: "success", msg: "Account created successfully!" });
+    setLoading(true);
     console.log("Submitting form data:", formData);
     try {
       await api.post("/accounts", formData);
-      navigate("/accounts"); // Go back to list after success
-    } catch (error) {
-      console.error("Error creating account:", error);
+      setOpen(true);
+      setTimeout(() => {
+        navigate("/accounts");
+      }, 1500);
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || "Account creation failed";
+      setStatus({ type: "error", msg: errorMsg });
+      setOpen(true);
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Box className="max-w-3xl mx-auto ">
+    <Box sx={{ width: 700 }} className="mx-auto ">
+      <Snackbar
+        open={open}
+        autoHideDuration={6000}
+        onClose={() => setOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          severity={status.type}
+          variant="filled"
+          style={{ marginTop: "50px" }}
+        >
+          {status.msg}
+        </Alert>
+      </Snackbar>
       {/* Back Button */}
       <Button
         startIcon={<ArrowLeftIcon className="h-4 w-4" />}
@@ -71,7 +100,7 @@ const CreateAccount = () => {
 
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              <Grid size={6} item xs={12}>
+              <Grid size={12} item xs={12}>
                 <TextField
                   size="small"
                   fullWidth
@@ -112,11 +141,11 @@ const CreateAccount = () => {
                   required
                   label="Initial Balance"
                   type="number"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">$</InputAdornment>
-                    ),
-                  }}
+                  // InputProps={{
+                  // startAdornment: (
+                  //   <InputAdornment position="start">$</InputAdornment>
+                  // ),
+                  // }}
                   value={formData.balance}
                   onChange={(e) =>
                     setFormData({ ...formData, balance: e.target.value })
@@ -124,7 +153,7 @@ const CreateAccount = () => {
                 />
               </Grid>
 
-              <Grid size={6} item xs={12} md={6}>
+              {/* <Grid size={6} item xs={12} md={6}>
                 <TextField
                   size="small"
                   select
@@ -142,18 +171,27 @@ const CreateAccount = () => {
                     </MenuItem>
                   ))}
                 </TextField>
-              </Grid>
+              </Grid> */}
             </Grid>
 
             <div className="flex justify-center mt-6">
               <Button
                 type="submit"
+                disabled={loading}
                 variant="contained"
                 // fullWidth
                 // size="large"
                 sx={{ borderRadius: 2 }}
               >
-                Create Account
+                {loading ? (
+                  <CircularProgress
+                    size={20}
+                    color="inherit"
+                    className="mr-2"
+                  />
+                ) : (
+                  "Create Account"
+                )}
               </Button>
             </div>
           </form>
