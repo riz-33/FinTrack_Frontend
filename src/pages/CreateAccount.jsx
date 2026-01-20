@@ -13,6 +13,7 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
+  InputAdornment,
 } from "@mui/material";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
@@ -23,18 +24,21 @@ const accountTypes = [
   { value: "credit", label: "Credit Card" },
 ];
 
-// const currencyOptions = [
-//   { value: "USD", label: "US Dollar (USD)" },
-//   { value: "EUR", label: "Euro (EUR)" },
-//   { value: "GBP", label: "British Pound (GBP)" },
-//   { value: "PKR", label: "Pakistani Rupee (PKR)" },
-// ];
+const currencyOptions = [
+  { value: "USD", label: "US Dollar (USD)", symbol: "$" },
+  { value: "EUR", label: "Euro (EUR)", symbol: "€" },
+  { value: "GBP", label: "British Pound (GBP)", symbol: "£" },
+  { value: "PKR", label: "Pakistani Rupee (PKR)", symbol: "Rs" },
+];
 
 const CreateAccount = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState({ type: "success", msg: "" });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -43,21 +47,28 @@ const CreateAccount = () => {
     currency: "USD",
   });
 
+  const showToast = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus({ type: "success", msg: "Account created successfully!" });
     setLoading(true);
-    console.log("Submitting form data:", formData);
     try {
       await api.post("/accounts", formData);
-      setOpen(true);
+      showToast("Account created successfully!"); // Success Toast
       setTimeout(() => {
         navigate("/accounts");
       }, 1500);
     } catch (err) {
-      const errorMsg = err.response?.data?.message || "Account creation failed";
-      setStatus({ type: "error", msg: errorMsg });
-      setOpen(true);
+      showToast(
+        err.response?.data?.message || "Account creation failed",
+        "error",
+      ); // Error Toast
       console.error(err);
     } finally {
       setLoading(false);
@@ -65,33 +76,42 @@ const CreateAccount = () => {
   };
 
   return (
-    <Box sx={{ width: 700 }} className="mx-auto ">
+    <Box sx={{ maxWidth: 600, mx: "auto" }}>
       <Snackbar
-        open={open}
-        autoHideDuration={6000}
-        onClose={() => setOpen(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
-          severity={status.type}
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
           variant="filled"
-          style={{ marginTop: "50px" }}
+          sx={{ width: "100%", borderRadius: 2 }}
         >
-          {status.msg}
+          {snackbar.message}
         </Alert>
       </Snackbar>
+
       {/* Back Button */}
       <Button
         startIcon={<ArrowLeftIcon className="h-4 w-4" />}
         onClick={() => navigate("/accounts")}
-        className="mb-6 text-gray-500 hover:text-blue-600"
+        sx={{
+          textTransform: "none",
+          color: "text.secondary",
+          "&:hover": { color: "primary.main" },
+        }}
       >
         Back to Accounts
       </Button>
 
-      <Card variant="outlined" sx={{ borderRadius: 3 }}>
+      <Card
+        variant="outlined"
+        sx={{ borderRadius: 4, boxShadow: "0px 4px 20px rgba(0,0,0,0.05)" }}
+      >
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h5" fontWeight="bold" gutterBottom>
+          <Typography variant="h5" fontWeight="800" gutterBottom>
             Add New Account
           </Typography>
           <Typography variant="body2" color="textSecondary" mb={4}>
@@ -111,6 +131,7 @@ const CreateAccount = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                 />
               </Grid>
 
@@ -125,6 +146,7 @@ const CreateAccount = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, type: e.target.value })
                   }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                 >
                   {accountTypes.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
@@ -141,15 +163,24 @@ const CreateAccount = () => {
                   required
                   label="Initial Balance"
                   type="number"
-                  // InputProps={{
-                  // startAdornment: (
-                  //   <InputAdornment position="start">$</InputAdornment>
-                  // ),
-                  // }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Typography
+                          sx={{ fontWeight: "bold", color: "text.primary" }}
+                        >
+                          {currencyOptions.find(
+                            (c) => c.value === formData.currency,
+                          )?.symbol || "$"}
+                        </Typography>
+                      </InputAdornment>
+                    ),
+                  }}
                   value={formData.balance}
                   onChange={(e) =>
                     setFormData({ ...formData, balance: e.target.value })
                   }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                 />
               </Grid>
 
@@ -172,28 +203,47 @@ const CreateAccount = () => {
                   ))}
                 </TextField>
               </Grid> */}
-            </Grid>
 
-            <div className="flex justify-center mt-6">
-              <Button
-                type="submit"
-                disabled={loading}
-                variant="contained"
-                // fullWidth
-                // size="large"
-                sx={{ borderRadius: 2 }}
-              >
-                {loading ? (
-                  <CircularProgress
-                    size={20}
-                    color="inherit"
-                    className="mr-2"
-                  />
-                ) : (
-                  "Create Account"
-                )}
-              </Button>
-            </div>
+              <Grid item xs={12}>
+                <Box display="flex" gap={2}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={loading}
+                    disableElevation
+                    sx={{
+                      borderRadius: 2.5,
+                      px: 4,
+                      textTransform: "none",
+                      fontWeight: "bold",
+                      flex: 1,
+                    }}
+                  >
+                    {loading ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      "Create Account"
+                    )}
+                  </Button>
+
+                  <Button
+                    // fullWidth
+                    variant="outlined"
+                    // size="large"
+                    onClick={() => navigate("/accounts")}
+                    sx={{
+                      borderRadius: 2.5,
+                      px: 4,
+                      textTransform: "none",
+                      fontWeight: "bold",
+                      // flex: 1,
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
           </form>
         </CardContent>
       </Card>

@@ -19,6 +19,13 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  TextField,
+  MenuItem as SelectItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   PlusIcon,
@@ -40,6 +47,49 @@ const Accounts = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [formData, setFormData] = useState({ name: "", balance: 0, type: "" });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showToast = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  // Open Edit Dialog and populate data
+  const handleOpenEdit = () => {
+    setFormData({
+      name: selectedAccount.name,
+      balance: selectedAccount.balance,
+      type: selectedAccount.type,
+    });
+    setOpenEditDialog(true);
+    handleCloseMenu();
+  };
+
+  const handleUpdateAccount = async () => {
+    try {
+      const res = await api.put(`/accounts/${selectedAccount._id}`, formData);
+      // Update local state so UI refreshes immediately
+      setAccounts(
+        accounts.map((a) => (a._id === selectedAccount._id ? res.data : a)),
+      );
+      setOpenEditDialog(false);
+      showToast("Account updated successfully!"); // Success Toast
+    } catch (error) {
+      showToast(
+        error.response?.data?.message || "Failed to update account",
+        "error",
+      ); // Error Toast
+    }
+  };
 
   const handleOpenMenu = (event, account) => {
     setAnchorEl(event.currentTarget);
@@ -61,8 +111,14 @@ const Accounts = () => {
       await api.delete(`/accounts/${selectedAccount._id}`);
       setAccounts(accounts.filter((a) => a._id !== selectedAccount._id));
       setOpenDeleteDialog(false);
+      showToast("Account deleted successfully!");
     } catch (error) {
-      console.error("Failed to delete account", error);
+      showToast(
+        error.response?.data?.message || "Failed to delete account",
+        "error",
+      );
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -248,9 +304,7 @@ const Accounts = () => {
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        <MenuItem
-          onClick={() => navigate(`/accounts/edit/${selectedAccount?._id}`)}
-        >
+        <MenuItem onClick={handleOpenEdit}>
           <ListItemIcon>
             <PencilIcon className="h-4 w-4" />
           </ListItemIcon>
@@ -302,6 +356,81 @@ const Accounts = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* --- EDIT ACCOUNT DIALOG --- */}
+      <Dialog
+        open={openEditDialog}
+        onClose={() => setOpenEditDialog(false)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle sx={{ fontWeight: "bold" }}>Edit Account</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 1 }}>
+            <TextField
+              label="Account Name"
+              fullWidth
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+            />
+            <FormControl fullWidth>
+              <InputLabel>Account Type</InputLabel>
+              <Select
+                label="Account Type"
+                value={formData.type}
+                onChange={(e) =>
+                  setFormData({ ...formData, type: e.target.value })
+                }
+              >
+                <SelectItem value="bank">Bank Account</SelectItem>
+                <SelectItem value="credit">Credit Card</SelectItem>
+                <SelectItem value="cash">Cash/Wallet</SelectItem>
+                <SelectItem value="savings">Savings/Investment</SelectItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Balance"
+              type="number"
+              fullWidth
+              value={formData.balance}
+              onChange={(e) =>
+                setFormData({ ...formData, balance: e.target.value })
+              }
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setOpenEditDialog(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleUpdateAccount}
+            variant="contained"
+            disableElevation
+            sx={{ borderRadius: 2 }}
+          >
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: "100%", borderRadius: 2 }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

@@ -7,8 +7,20 @@ import { Alert, Snackbar, CircularProgress } from "@mui/material";
 export default function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState({ type: "success", msg: "" });
+  // const [open, setOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showToast = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,16 +42,13 @@ export default function Register() {
 
     try {
       const res = await api.post("/auth/register", formData);
-      setStatus({ type: "success", msg: "Registration successful!" });
-      setOpen(true);
+      showToast("Registration successful!"); // Success Toast
       setTimeout(() => {
         navigate("/dashboard");
       }, 1500);
       console.log(res.data);
     } catch (err) {
-      const errorMsg = err.response?.data?.message || "Registration failed";
-      setStatus({ type: "error", msg: errorMsg });
-      setOpen(true);
+      showToast(err.response?.data?.message || "Registration failed", "error"); // Error Toast
       console.error(err);
     } finally {
       setLoading(false);
@@ -49,17 +58,18 @@ export default function Register() {
   return (
     <div className="bg-gray-900 flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
       <Snackbar
-        open={open}
-        autoHideDuration={6000}
-        onClose={() => setOpen(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
-          severity={status.type}
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
           variant="filled"
-          style={{ width: "250px" }}
+          sx={{ width: "100%", borderRadius: 2 }}
         >
-          {status.msg}
+          {snackbar.message}
         </Alert>
       </Snackbar>
 
