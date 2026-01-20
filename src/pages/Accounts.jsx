@@ -118,7 +118,7 @@ const Accounts = () => {
         "error",
       );
     } finally {
-      setDeleteLoading(false);
+      setLoading(false);
     }
   };
 

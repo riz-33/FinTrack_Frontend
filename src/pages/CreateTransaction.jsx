@@ -91,9 +91,9 @@ const CreateTransaction = () => {
     try {
       await api.post("/transactions", formData);
       showToast("Transaction created successfully!"); // Success Toast
-      // setTimeout(() => {
-      // navigate("/transactions");
-      // }, 1500);
+      setTimeout(() => {
+      navigate("/transactions");
+      }, 1500);
     } catch (error) {
       showToast(error.response?.data?.message || "Creation failed", "error");
     } finally {
@@ -159,7 +159,7 @@ const CreateTransaction = () => {
                   fullWidth
                   sx={{
                     height: 48,
-                    bgcolor: "grey.50",
+                    // bgcolor: "grey.50",
                     p: 0.5,
                     borderRadius: 3,
                     border: "1px solid",
@@ -174,6 +174,7 @@ const CreateTransaction = () => {
                     value="expense"
                     sx={{
                       gap: 1,
+                      // color: "black",
                       textTransform: "none",
                       fontWeight: "bold",
                       transition: "all 0.2s",

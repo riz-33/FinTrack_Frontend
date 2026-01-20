@@ -37,8 +37,14 @@ const Transactions = () => {
     try {
       setLoading(true);
       const res = await api.get("/transactions");
-      setTransactions(res.data);
-      setFilteredData(res.data);
+      console.log(res.data);
+      const data = res.data;
+      const sortedData = data.sort(
+        (a, b) => new Date(b.date) - new Date(a.date),
+      );
+      setTransactions(sortedData);
+      // setTransactions(data);
+      setFilteredData(sortedData);
     } catch (error) {
       console.error("Error fetching transactions:", error);
     } finally {
@@ -59,7 +65,7 @@ const Transactions = () => {
       result = result.filter(
         (t) =>
           t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          t.category.toLowerCase().includes(searchTerm.toLowerCase())
+          t.category.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -90,7 +96,7 @@ const Transactions = () => {
     a.setAttribute("href", url);
     a.setAttribute(
       "download",
-      `FinTrack_Transactions_${new Date().toISOString().slice(0, 10)}.csv`
+      `FinTrack_Transactions_${new Date().toISOString().slice(0, 10)}.csv`,
     );
     document.body.appendChild(a);
     a.click();
