@@ -11,6 +11,15 @@ import {
   InputAdornment,
   Grid,
   MenuItem,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TableCell,
+  IconButton,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   PlusIcon,
@@ -19,19 +28,139 @@ import {
   ArrowPathIcon,
   FunnelIcon,
   ArrowDownTrayIcon,
+  TrashIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import EmptyState from "../components/common/EmptyState";
 
+const categoriesExpense = [
+  "Food",
+  "Rent",
+  "Transport",
+  "Shopping",
+  "Entertainment",
+  "Bills",
+  "Others",
+];
+
+const categoriesIncome = ["Salary", "Business", "Investment", "Gift", "Others"];
+
+const currencySymbols = {
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  PKR: "Rs",
+};
+
 const Transactions = () => {
+  const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [accounts, setAccounts] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  // const [editFormData, setEditFormData] = useState(null);
+  const currentSymbol = currencySymbols[selectedAccount?.currency] || "$";
+  const [isUpdating, setIsUpdating] = useState(false); // Naya state
+  const [editFormData, setEditFormData] = useState({
+    description: "",
+    amount: "",
+    type: "expense",
+    category: "",
+    accountId: "",
+    fromAccountId: "",
+    toAccountId: "",
+    date: new Date().toISOString().split("T")[0],
+  });
+
+  // Edit button click par data load karne ka function
+  const handleEditClick = (transaction) => {
+    setEditFormData({
+      ...transaction,
+      // Agar account populated hai to ID nikalni hogi
+      accountId: transaction.accountId?._id || transaction.accountId,
+      fromAccountId:
+        transaction.fromAccountId?._id || transaction.fromAccountId,
+      toAccountId: transaction.toAccountId?._id || transaction.toAccountId,
+      date: new Date(transaction.date).toISOString().split("T")[0],
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setIsUpdating(true); // Start loading
+    try {
+      const finalData = {
+        ...editFormData,
+        amount: Number(editFormData.amount),
+      };
+      await api.put(`/transactions/${editFormData._id}`, finalData);
+      setEditModalOpen(false);
+      showToast("Transaction updated!");
+      fetchTransactions();
+    } catch (error) {
+      showToast(error.response?.data?.message || "Update failed", "error");
+    } finally {
+      setIsUpdating(false); // Stop loading
+    }
+  };
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showToast = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleOpenMenu = (event, account) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedAccount(account);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+    // setSelectedAccount(null);
+  };
+
+  const handleOpenDelete = () => {
+    setOpenDeleteDialog(true);
+    handleCloseMenu();
+  };
+
+  // Delete handle karne ka function
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      await api.delete(`/transactions/${selectedId}`);
+      setOpenConfirm(false);
+      showToast("Transaction deleted successfully!");
+      fetchTransactions(); // List refresh karein
+    } catch (error) {
+      showToast(
+        error.response?.data?.message || "Delete failed",
+        "error",
+        "error",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter States
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
-
-  const navigate = useNavigate();
 
   const fetchTransactions = async () => {
     try {
@@ -53,7 +182,16 @@ const Transactions = () => {
   };
 
   useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const res = await api.get("/accounts");
+        setAccounts(res.data);
+      } catch (err) {
+        console.error("Error fetching accounts", err);
+      }
+    };
     fetchTransactions();
+    fetchAccounts();
   }, []);
 
   // Filter Logic
@@ -100,7 +238,7 @@ const Transactions = () => {
       .join("\n");
 
     // 3. Create the file blob
-    const blob = new Blob([headers, ...rows], { type: "text/csv" });
+    const blob = new Blob([headers + rows], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
 
     // 4. Trigger download
@@ -234,6 +372,9 @@ const Transactions = () => {
                   <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">
                     Amount
                   </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -242,7 +383,6 @@ const Transactions = () => {
                     key={t._id}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    {/* ... table row content (same as before) ... */}
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {new Date(t.date).toLocaleDateString()}
                     </td>
@@ -264,6 +404,33 @@ const Transactions = () => {
                       {t.type === "income" ? "+" : "-"} $
                       {t.amount.toLocaleString()}
                     </td>
+                    <td className="px-6 py-4 text-right">
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          gap: 1,
+                        }}
+                      >
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => handleEditClick(t)}
+                        >
+                          <PencilSquareIcon className="h-5 w-5" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => {
+                            setSelectedId(t._id);
+                            setOpenConfirm(true);
+                          }}
+                        >
+                          <TrashIcon className="h-5 w-5" />
+                        </IconButton>
+                      </Box>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -271,6 +438,230 @@ const Transactions = () => {
           </div>
         )}
       </Card>
+
+      {/* Confirmation Popup */}
+      <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+        <DialogTitle>Delete Transaction?</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete? This action cannot be undone and will
+          remove all associated transaction history.
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setOpenConfirm(false)}>Cancel</Button>
+          <Button onClick={handleDelete} variant="contained" color="error">
+            {loading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Confirm Delete"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogTitle
+          sx={{
+            fontWeight: "bold",
+            background: "linear-gradient(45deg, #1976d2, #42a5f5)",
+            color: "white",
+            mb: 2,
+          }}
+        >
+          Edit Transaction
+        </DialogTitle>
+        <form onSubmit={handleUpdate}>
+          <DialogContent dividers>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  // label="Description"
+                  value={editFormData?.description || ""}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      description: e.target.value,
+                    })
+                  }
+                />
+              </Grid>
+              {editFormData.type === "transfer" ? (
+                <>
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      // label="From Account"
+                      required
+                      value={editFormData.fromAccountId}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          fromAccountId: e.target.value,
+                        })
+                      }
+                    >
+                      {accounts.map((acc) => (
+                        <MenuItem key={acc._id} value={acc._id}>
+                          {acc.name} ({currencySymbols[acc.currency] || ""}
+                          {acc.balance.toLocaleString()})
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      size="small"
+                      fullWidth
+                      // label="To Account"
+                      required
+                      value={editFormData.toAccountId}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          toAccountId: e.target.value,
+                        })
+                      }
+                    >
+                      {/* Tip: Filter out the 'From' account so they don't transfer to the same account */}
+                      {accounts
+                        .filter((acc) => acc._id !== editFormData.fromAccountId)
+                        .map((acc) => (
+                          <MenuItem key={acc._id} value={acc._id}>
+                            {acc.name} ({currencySymbols[acc.currency] || ""}
+                            {acc.balance.toLocaleString()})
+                          </MenuItem>
+                        ))}
+                    </TextField>
+                  </Grid>
+                </>
+              ) : (
+                <>
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      size="small"
+                      fullWidth
+                      // label="Select Account"
+                      required
+                      value={editFormData.accountId}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          accountId: e.target.value,
+                        })
+                      }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                    >
+                      {accounts.map((acc) => (
+                        <MenuItem key={acc._id} value={acc._id}>
+                          {acc.name} ({currencySymbols[acc.currency] || ""}
+                          {acc.balance.toLocaleString()})
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      size="small"
+                      fullWidth
+                      // label="Category"
+                      required
+                      value={editFormData.category}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          category: e.target.value,
+                        })
+                      }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                    >
+                      {(editFormData.type === "income"
+                        ? categoriesIncome
+                        : categoriesExpense
+                      ).map((cat) => (
+                        <MenuItem key={cat} value={cat}>
+                          {cat}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                </>
+              )}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Amount"
+                  value={editFormData?.amount || ""}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      amount: e.target.value,
+                    })
+                  }
+                />
+              </Grid>
+
+              <Grid size={6} item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="date"
+                  // label="Transaction Date"
+                  InputLabelProps={{ shrink: true }}
+                  value={editFormData.date}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, date: e.target.value })
+                  }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setEditModalOpen(false)}>Cancel</Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={isUpdating} // Add this
+            >
+              {isUpdating ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Update Changes"
+              )}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
