@@ -79,12 +79,25 @@ const Transactions = () => {
 
   const exportToCSV = () => {
     // 1. Define CSV headers
-    const headers = ["Date,Description,Category,Type,Amount,Account\n"];
+    const headers = [
+      "Date,Description,Category,Type,Amount,Account, From Account, To Account\n",
+    ];
 
-    // 2. Map data to rows
-    const rows = filteredData.map((t) => {
-      return `${new Date(t.date).toLocaleDateString()},${t.description.replace(/,/g, "")},${t.category},${t.type},${t.amount},${t.accountName || "N/A"}\n`;
-    });
+    // 2. Map data to rows with safety checks
+    const rows = filteredData
+      .map((t) => {
+        const date = new Date(t.date).toLocaleDateString();
+        const desc = (t.description || "No Description").replace(/,/g, "");
+        const category = t.categoryId?.name || t.category || "N/A";
+
+        // Logical mapping for the Account columns
+        const mainAccount = t.accountId?.name || "N/A";
+        const fromAccount = t.fromAccountId?.name || "N/A"; // Accessing the .name property
+        const toAccount = t.toAccountId?.name || "N/A"; // Accessing the .name property
+
+        return `${date},${desc},${category},${t.type},${t.amount},${mainAccount},${fromAccount},${toAccount}`;
+      })
+      .join("\n");
 
     // 3. Create the file blob
     const blob = new Blob([headers, ...rows], { type: "text/csv" });

@@ -21,6 +21,7 @@ import {
   ArrowLeftIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
+  ArrowsRightLeftIcon,
 } from "@heroicons/react/24/outline";
 
 const categoriesExpense = [
@@ -58,6 +59,8 @@ const CreateTransaction = () => {
     type: "expense",
     category: "",
     accountId: "",
+    fromAccountId: "",
+    toAccountId: "",
     date: new Date().toISOString().split("T")[0],
   });
 
@@ -76,7 +79,13 @@ const CreateTransaction = () => {
 
   const handleTypeChange = (e, val) => {
     if (val) {
-      setFormData({ ...formData, type: val, category: "" }); // Reset category on type change
+      setFormData({
+        ...formData,
+        type: val,
+        category: "",
+        fromAccountId: "",
+        toAccountId: "",
+      }); // Reset category on type change
     }
   };
 
@@ -88,11 +97,16 @@ const CreateTransaction = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log(formData);
+    const submissionData = {
+      ...formData,
+      amount: Number(formData.amount), // Ensure this is a number
+    };
     try {
-      await api.post("/transactions", formData);
+      await api.post("/transactions", submissionData);
       showToast("Transaction created successfully!"); // Success Toast
       setTimeout(() => {
-      navigate("/transactions");
+        navigate("/transactions");
       }, 1500);
     } catch (error) {
       showToast(error.response?.data?.message || "Creation failed", "error");
@@ -100,6 +114,17 @@ const CreateTransaction = () => {
       setLoading(false);
     }
   };
+
+  // Find the account the user currently has selected
+  const activeAccount =
+    formData.type === "transfer"
+      ? accounts.find((a) => a._id === formData.fromAccountId)
+      : accounts.find((a) => a._id === formData.accountId);
+
+  // Determine if we are over the limit
+  const isOverLimit =
+    (formData.type === "expense" || formData.type === "transfer") &&
+    Number(formData.amount) > (activeAccount?.balance || 0);
 
   return (
     <Box sx={{ maxWidth: 600, mx: "auto" }}>
@@ -206,6 +231,23 @@ const CreateTransaction = () => {
                     <ArrowTrendingUpIcon className="h-5 w-5" />
                     Income
                   </ToggleButton>
+
+                  <ToggleButton
+                    value="transfer"
+                    sx={{
+                      gap: 1,
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      transition: "all 0.2s",
+                      "&.Mui-selected": {
+                        bgcolor: "#dceefc", // Soft green
+                        color: "#1668a3",
+                        "&:hover": { bgcolor: "#bbf7d0" },
+                      },
+                    }}
+                  >
+                    <ArrowsRightLeftIcon className="h-4 w-4" /> Transfer
+                  </ToggleButton>
                 </ToggleButtonGroup>
               </Grid>
 
@@ -224,6 +266,112 @@ const CreateTransaction = () => {
                 />
               </Grid>
 
+              {/* CONDITIONAL FIELDS */}
+              {formData.type === "transfer" ? (
+                <>
+                  {/* TRANSFER VIEW: Show From and To Accounts */}
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      label="From Account"
+                      required
+                      value={formData.fromAccountId}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          fromAccountId: e.target.value,
+                        })
+                      }
+                    >
+                      {accounts.map((acc) => (
+                        <MenuItem key={acc._id} value={acc._id}>
+                          {acc.name} ({currencySymbols[acc.currency] || ""}
+                          {acc.balance.toLocaleString()})
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      size="small"
+                      fullWidth
+                      label="To Account"
+                      required
+                      value={formData.toAccountId}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          toAccountId: e.target.value,
+                        })
+                      }
+                    >
+                      {/* Tip: Filter out the 'From' account so they don't transfer to the same account */}
+                      {accounts
+                        .filter((acc) => acc._id !== formData.fromAccountId)
+                        .map((acc) => (
+                          <MenuItem key={acc._id} value={acc._id}>
+                            {acc.name} ({currencySymbols[acc.currency] || ""}
+                            {acc.balance.toLocaleString()})
+                          </MenuItem>
+                        ))}
+                    </TextField>
+                  </Grid>
+                </>
+              ) : (
+                <>
+                  {/* NORMAL VIEW: Show Single Account and Category */}
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      size="small"
+                      fullWidth
+                      label="Select Account"
+                      required
+                      value={formData.accountId}
+                      onChange={(e) =>
+                        setFormData({ ...formData, accountId: e.target.value })
+                      }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                    >
+                      {accounts.map((acc) => (
+                        <MenuItem key={acc._id} value={acc._id}>
+                          {acc.name} ({currencySymbols[acc.currency] || ""}
+                          {acc.balance.toLocaleString()})
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      size="small"
+                      fullWidth
+                      label="Category"
+                      required
+                      value={formData.category}
+                      onChange={(e) =>
+                        setFormData({ ...formData, category: e.target.value })
+                      }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                    >
+                      {(formData.type === "income"
+                        ? categoriesIncome
+                        : categoriesExpense
+                      ).map((cat) => (
+                        <MenuItem key={cat} value={cat}>
+                          {cat}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                </>
+              )}
+
+              {/* Amount and Date (Visible for all) */}
               <Grid size={6} item xs={12} md={6}>
                 <TextField
                   fullWidth
@@ -231,6 +379,12 @@ const CreateTransaction = () => {
                   label="Amount"
                   type="number"
                   required
+                  error={isOverLimit}
+                  helperText={
+                    isOverLimit
+                      ? `Warning: Exceeds ${activeAccount?.name} balance!`
+                      : ""
+                  }
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -248,52 +402,6 @@ const CreateTransaction = () => {
                   }
                   sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                 />
-              </Grid>
-
-              <Grid size={6} item xs={12} md={6}>
-                <TextField
-                  select
-                  size="small"
-                  fullWidth
-                  label="Category"
-                  required
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
-                >
-                  {(formData.type === "income"
-                    ? categoriesIncome
-                    : categoriesExpense
-                  ).map((cat) => (
-                    <MenuItem key={cat} value={cat}>
-                      {cat}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              <Grid size={6} item xs={12} md={6}>
-                <TextField
-                  select
-                  size="small"
-                  fullWidth
-                  label="Select Account"
-                  required
-                  value={formData.accountId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, accountId: e.target.value })
-                  }
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
-                >
-                  {accounts.map((acc) => (
-                    <MenuItem key={acc._id} value={acc._id}>
-                      {acc.name} ({currencySymbols[acc.currency] || ""}
-                      {acc.balance.toLocaleString()})
-                    </MenuItem>
-                  ))}
-                </TextField>
               </Grid>
 
               <Grid size={6} item xs={12} md={6}>

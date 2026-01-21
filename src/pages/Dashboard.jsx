@@ -74,7 +74,15 @@ const Dashboard = () => {
       {loading ? (
         <Skeleton variant="text" width="60%" height={40} sx={{ mx: "auto" }} />
       ) : (
-        <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: "bold",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
           {formatValue(value || 0).toLocaleString(undefined, {
             minimumFractionDigits: 2,
           })}
