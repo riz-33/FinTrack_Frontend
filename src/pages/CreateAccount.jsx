@@ -203,46 +203,46 @@ const CreateAccount = () => {
                   ))}
                 </TextField>
               </Grid> */}
+            </Grid>
 
-              <Grid item xs={12}>
-                <Box display="flex" gap={2}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={loading}
-                    disableElevation
-                    sx={{
-                      borderRadius: 2.5,
-                      px: 4,
-                      textTransform: "none",
-                      fontWeight: "bold",
-                      flex: 1,
-                    }}
-                  >
-                    {loading ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      "Create Account"
-                    )}
-                  </Button>
+            <Grid className='mt-4' item xs={12}>
+              <Box display="flex" gap={2}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={loading}
+                  disableElevation
+                  sx={{
+                    borderRadius: 2.5,
+                    px: 4,
+                    textTransform: "none",
+                    fontWeight: "bold",
+                    flex: 1,
+                  }}
+                >
+                  {loading ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Create Account"
+                  )}
+                </Button>
 
-                  <Button
-                    // fullWidth
-                    variant="outlined"
-                    // size="large"
-                    onClick={() => navigate("/accounts")}
-                    sx={{
-                      borderRadius: 2.5,
-                      px: 4,
-                      textTransform: "none",
-                      fontWeight: "bold",
-                      // flex: 1,
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </Box>
-              </Grid>
+                <Button
+                  // fullWidth
+                  variant="outlined"
+                  // size="large"
+                  onClick={() => navigate("/accounts")}
+                  sx={{
+                    borderRadius: 2.5,
+                    px: 4,
+                    textTransform: "none",
+                    fontWeight: "bold",
+                    // flex: 1,
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Box>
             </Grid>
           </form>
         </CardContent>

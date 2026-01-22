@@ -40,6 +40,7 @@ const categoriesExpense = [
   "Shopping",
   "Entertainment",
   "Bills",
+  "Health",
   "Others",
 ];
 
@@ -132,11 +133,6 @@ const Transactions = () => {
   const handleCloseMenu = () => {
     setAnchorEl(null);
     // setSelectedAccount(null);
-  };
-
-  const handleOpenDelete = () => {
-    setOpenDeleteDialog(true);
-    handleCloseMenu();
   };
 
   // Delete handle karne ka function
@@ -321,8 +317,9 @@ const Transactions = () => {
               onChange={(e) => setFilterType(e.target.value)}
             >
               <MenuItem value="all">All Types</MenuItem>
-              <MenuItem value="income">Income Only</MenuItem>
-              <MenuItem value="expense">Expense Only</MenuItem>
+              <MenuItem value="income">Income</MenuItem>
+              <MenuItem value="expense">Expense</MenuItem>
+              <MenuItem value="transfer">Transfer</MenuItem>
             </TextField>
           </Grid>
           <Grid item xs={6} md={3}>
@@ -444,7 +441,7 @@ const Transactions = () => {
         <DialogTitle>Delete Transaction?</DialogTitle>
         <DialogContent>
           Are you sure you want to delete? This action cannot be undone and will
-          remove all associated transaction history.
+          remove transaction history.
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setOpenConfirm(false)}>Cancel</Button>
@@ -478,10 +475,11 @@ const Transactions = () => {
         <form onSubmit={handleUpdate}>
           <DialogContent dividers>
             <Grid container spacing={2}>
-              <Grid item xs={12}>
+              <Grid size={12} item xs={12}>
                 <TextField
                   fullWidth
-                  // label="Description"
+                  size="small"
+                  label="Description"
                   value={editFormData?.description || ""}
                   onChange={(e) =>
                     setEditFormData({
@@ -489,6 +487,7 @@ const Transactions = () => {
                       description: e.target.value,
                     })
                   }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                 />
               </Grid>
               {editFormData.type === "transfer" ? (
@@ -498,8 +497,8 @@ const Transactions = () => {
                       select
                       fullWidth
                       size="small"
-                      // label="From Account"
-                      required
+                      label="From Account"
+                      // required
                       value={editFormData.fromAccountId}
                       onChange={(e) =>
                         setEditFormData({
@@ -507,6 +506,7 @@ const Transactions = () => {
                           fromAccountId: e.target.value,
                         })
                       }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                     >
                       {accounts.map((acc) => (
                         <MenuItem key={acc._id} value={acc._id}>
@@ -522,8 +522,8 @@ const Transactions = () => {
                       select
                       size="small"
                       fullWidth
-                      // label="To Account"
-                      required
+                      label="To Account"
+                      // required
                       value={editFormData.toAccountId}
                       onChange={(e) =>
                         setEditFormData({
@@ -531,6 +531,7 @@ const Transactions = () => {
                           toAccountId: e.target.value,
                         })
                       }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                     >
                       {/* Tip: Filter out the 'From' account so they don't transfer to the same account */}
                       {accounts
@@ -551,8 +552,8 @@ const Transactions = () => {
                       select
                       size="small"
                       fullWidth
-                      // label="Select Account"
-                      required
+                      label="Select Account"
+                      // required
                       value={editFormData.accountId}
                       onChange={(e) =>
                         setEditFormData({
@@ -576,8 +577,8 @@ const Transactions = () => {
                       select
                       size="small"
                       fullWidth
-                      // label="Category"
-                      required
+                      label="Category"
+                      // required
                       value={editFormData.category}
                       onChange={(e) =>
                         setEditFormData({
@@ -599,18 +600,31 @@ const Transactions = () => {
                   </Grid>
                 </>
               )}
-              <Grid item xs={12}>
+              <Grid size={6} item xs={12}>
                 <TextField
                   fullWidth
+                  size="small"
                   type="number"
                   label="Amount"
                   value={editFormData?.amount || ""}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Typography
+                          sx={{ fontWeight: "bold", color: "text.primary" }}
+                        >
+                          {currentSymbol}
+                        </Typography>
+                      </InputAdornment>
+                    ),
+                  }}
                   onChange={(e) =>
                     setEditFormData({
                       ...editFormData,
                       amount: e.target.value,
                     })
                   }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                 />
               </Grid>
 
@@ -619,7 +633,7 @@ const Transactions = () => {
                   fullWidth
                   size="small"
                   type="date"
-                  // label="Transaction Date"
+                  label="Transaction Date"
                   InputLabelProps={{ shrink: true }}
                   value={editFormData.date}
                   onChange={(e) =>

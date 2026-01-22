@@ -26,7 +26,9 @@ const Budgets = () => {
       try {
         setLoading(true);
         // We assume the API returns: { category, limit, spent }
-        const res = await api.get("/reports/budgets?month=2026-01");
+        const res = await api.get("/budgets", {
+          params: { month: "2026-01" }, // Using params is cleaner
+        });
         setBudgets(res.data);
       } catch (error) {
         console.error("Error fetching budgets:", error);
@@ -75,7 +77,7 @@ const Budgets = () => {
           {budgets.map((budget) => {
             const percentage = Math.min(
               (budget.spent / budget.limit) * 100,
-              100
+              100,
             );
             const isOverBudget = budget.spent > budget.limit;
 
@@ -91,8 +93,7 @@ const Budgets = () => {
                         variant="body2"
                         color={isOverBudget ? "error.main" : "textSecondary"}
                       >
-                        ${budget.spent.toLocaleString()} / $
-                        {budget.limit.toLocaleString()}
+                        ${budget.spent} / ${budget.limit}
                       </Typography>
                     </Box>
 
