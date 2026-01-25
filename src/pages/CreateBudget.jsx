@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useContext } from "react"; // Added useContext
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { CurrencyContext } from "../context/ThemeContext"; // Import your context
 import {
   Box,
   Card,
@@ -11,8 +12,8 @@ import {
   MenuItem,
   Grid,
   InputAdornment,
-  Alert,
   Snackbar,
+  Alert,
   CircularProgress,
 } from "@mui/material";
 import { ArrowLeftIcon, WalletIcon } from "@heroicons/react/24/outline";
@@ -28,15 +29,9 @@ const categories = [
   "Others",
 ];
 
-const currencyOptions = [
-  { value: "USD", label: "US Dollar (USD)", symbol: "$" },
-  { value: "EUR", label: "Euro (EUR)", symbol: "€" },
-  { value: "GBP", label: "British Pound (GBP)", symbol: "£" },
-  { value: "PKR", label: "Pakistani Rupee (PKR)", symbol: "Rs" },
-];
-
 const CreateBudget = () => {
   const navigate = useNavigate();
+  const { currency } = useContext(CurrencyContext); // Get the current currency symbol
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -47,103 +42,87 @@ const CreateBudget = () => {
   const [formData, setFormData] = useState({
     category: "",
     limit: "",
-    month: new Date().toISOString().slice(0, 7), // Format: "2026-01"
+    month: new Date().toISOString().slice(0, 7),
   });
 
   const showToast = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
+  const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Logic: Backend expects 'amount' for the limit
       await api.post("/budgets", {
         ...formData,
-        amount: formData.limit, 
+        amount: Number(formData.limit),
       });
-      showToast("Budget added successfully!"); // Success Toast
-      setTimeout(() => {
-        navigate("/budgets");
-      }, 1500);
+      showToast("Budget set successfully! Redirecting...");
+      setTimeout(() => navigate("/budgets"), 1500);
     } catch (err) {
       showToast(
         err.response?.data?.message ||
-          "Failed to set budget. You might already have a budget for this category.",
+          "A budget for this category already exists for this month.",
         "error",
       );
-      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box sx={{ maxWidth: 600, mx: "auto" }}>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: "100%", borderRadius: 2 }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+    <Box sx={{ maxWidth: 600, mx: "auto", mt: 2 }}>
       <Button
         startIcon={<ArrowLeftIcon className="h-4 w-4" />}
         onClick={() => navigate("/budgets")}
-        sx={{
-          textTransform: "none",
-          color: "text.secondary",
-          "&:hover": { color: "primary.main" },
-        }}
+        sx={{ mb: 2, textTransform: "none", color: "text.secondary" }}
       >
         Back to Budgets
       </Button>
 
       <Card
         variant="outlined"
-        sx={{ borderRadius: 4, boxShadow: "0px 4px 20px rgba(0,0,0,0.05)" }}
+        sx={{ borderRadius: 4, border: "1px solid", borderColor: "divider" }}
       >
         <CardContent sx={{ p: 4 }}>
-          <Box display="flex" alignItems="center" gap={2} mb={3}>
-            <div className="p-3 bg-blue-50 rounded-full">
-              <WalletIcon className="h-6 w-6 text-blue-600" />
-            </div>
+          <Box display="flex" alignItems="center" gap={2} mb={4}>
+            <Box
+              sx={{
+                p: 1.5,
+                bgcolor: "primary.light",
+                borderRadius: "12px",
+                color: "primary.main",
+                display: "flex",
+              }}
+            >
+              <WalletIcon className="h-6 w-6" />
+            </Box>
             <Box>
               <Typography variant="h5" fontWeight="800">
-                Set Category Budget
+                New Spending Limit
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                Define how much you want to spend this month.
+                Control your outflows by setting a monthly ceiling.
               </Typography>
             </Box>
           </Box>
 
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              <Grid size={4} item xs={12}>
+              <Grid item xs={12}>
                 <TextField
                   select
-                  size="small"
                   fullWidth
-                  label="Select Category"
+                  label="Category"
                   required
                   value={formData.category}
                   onChange={(e) =>
                     setFormData({ ...formData, category: e.target.value })
                   }
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                  helperText="One budget per category per month"
                 >
                   {categories.map((cat) => (
                     <MenuItem key={cat} value={cat}>
@@ -153,22 +132,18 @@ const CreateBudget = () => {
                 </TextField>
               </Grid>
 
-              <Grid size={4} item xs={12} md={6}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  size="small"
                   label="Monthly Limit"
                   type="number"
                   required
+                  inputProps={{ min: "1" }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Typography
-                          sx={{ fontWeight: "bold", color: "text.primary" }}
-                        >
-                          {currencyOptions.find(
-                            (c) => c.value === formData.currency,
-                          )?.symbol || "$"}
+                        <Typography sx={{ fontWeight: "bold" }}>
+                          {currency?.symbol || "$"}
                         </Typography>
                       </InputAdornment>
                     ),
@@ -177,15 +152,13 @@ const CreateBudget = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, limit: e.target.value })
                   }
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                 />
               </Grid>
 
-              <Grid size={4} item xs={12} md={6}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  size="small"
-                  label="Budget Month"
+                  label="Budget Period"
                   type="month"
                   required
                   value={formData.month}
@@ -193,52 +166,58 @@ const CreateBudget = () => {
                     setFormData({ ...formData, month: e.target.value })
                   }
                   InputLabelProps={{ shrink: true }}
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
                 />
               </Grid>
-            </Grid>
 
-            <Grid className="mt-4" item xs={12}>
-              <Box display="flex" gap={2}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  // fullWidth
-                  disableElevation
-                  disabled={loading}
-                  // size="large"
-                  sx={{
-                    borderRadius: 2.5,
-                    px: 4,
-                    textTransform: "none",
-                    fontWeight: "bold",
-                    flex: 1,
-                  }}
-                >
-                  {loading ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    "Set Budget"
-                  )}
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate("/budgets")}
-                  sx={{
-                    borderRadius: 2.5,
-                    px: 4,
-                    textTransform: "none",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
+              <Grid item xs={12} sx={{ mt: 2 }}>
+                <Box display="flex" gap={2}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={loading}
+                    sx={{
+                      flex: 2,
+                      py: 1.5,
+                      borderRadius: 2.5,
+                      fontWeight: "bold",
+                      textTransform: "none",
+                    }}
+                  >
+                    {loading ? <CircularProgress size={24} /> : "Set Budget"}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => navigate("/budgets")}
+                    sx={{
+                      flex: 1,
+                      py: 1.5,
+                      borderRadius: 2.5,
+                      fontWeight: "bold",
+                      textTransform: "none",
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              </Grid>
             </Grid>
           </form>
         </CardContent>
       </Card>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ borderRadius: 2 }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

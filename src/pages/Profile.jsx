@@ -10,14 +10,28 @@ import {
   Button,
   Grid,
   Avatar,
-  Divider,
+  Snackbar,
   Alert,
+  CircularProgress,
+  useTheme,
+  IconButton,
 } from "@mui/material";
-import { UserCircleIcon, KeyIcon } from "@heroicons/react/24/outline";
+import {
+  UserCircleIcon,
+  KeyIcon,
+  CameraIcon,
+} from "@heroicons/react/24/outline";
 
 const Profile = () => {
-  const { user } = useContext(AuthContext);
-  const [status, setStatus] = useState({ type: "", msg: "" });
+  const { user, login } = useContext(AuthContext); // Destructure login to update local state
+  const theme = useTheme();
+
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    msg: "",
+    type: "success",
+  });
 
   const [formData, setFormData] = useState({
     name: user?.name || "",
@@ -26,61 +40,127 @@ const Profile = () => {
     newPassword: "",
   });
 
+  const showToast = (msg, type = "success") => {
+    setSnackbar({ open: true, msg, type });
+  };
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      await api.put("/auth/update-profile", {
+      const res = await api.put("/auth/update-profile", {
         name: formData.name,
         email: formData.email,
       });
-      setStatus({ type: "success", msg: "Profile updated successfully!" });
+
+      // Update the AuthContext so the sidebar/header reflects the new name
+      login(res.data);
+      showToast("Profile updated successfully!");
     } catch (err) {
-      setStatus({ type: "error", msg: "Failed to update profile." });
+      showToast("Failed to update profile.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await api.put("/auth/change-password", {
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword,
       });
-      setStatus({ type: "success", msg: "Password changed successfully!" });
+      showToast("Password changed successfully!");
       setFormData({ ...formData, currentPassword: "", newPassword: "" });
     } catch (err) {
-      setStatus({
-        type: "error",
-        msg: err.response?.data?.message || "Password change failed.",
-      });
+      showToast(
+        err.response?.data?.message || "Password change failed.",
+        "error",
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Box className="max-w-4xl mx-auto">
-      <Typography variant="h5" fontWeight="bold" mb={3}>
-        Account Settings
-      </Typography>
+    <Box sx={{ maxWidth: 1000, mx: "auto", p: { xs: 2, md: 4 } }}>
+      {/* 1. Profile Header */}
+      <Box display="flex" alignItems="center" gap={3} mb={5}>
+        <Box position="relative">
+          <Avatar
+            sx={{
+              width: 100,
+              height: 100,
+              bgcolor: "primary.main",
+              fontSize: "2.5rem",
+              fontWeight: "bold",
+              boxShadow: theme.shadows[4],
+            }}
+          >
+            {user?.name?.charAt(0).toUpperCase()}
+          </Avatar>
+          <IconButton
+            size="small"
+            sx={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              bgcolor: "white",
+              border: "1px solid #ddd",
+              "&:hover": { bgcolor: "#f5f5f5" },
+            }}
+          >
+            <CameraIcon style={{ width: 16, height: 16 }} />
+          </IconButton>
+        </Box>
+        <Box>
+          <Typography variant="h4" fontWeight="900" letterSpacing="-1px">
+            {user?.name}
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            {user?.email}
+          </Typography>
+        </Box>
+      </Box>
 
-      {status.msg && (
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
         <Alert
-          severity={status.type}
-          sx={{ mb: 3 }}
-          onClose={() => setStatus({ type: "", msg: "" })}
+          severity={snackbar.type}
+          variant="filled"
+          sx={{ borderRadius: 2 }}
         >
-          {status.msg}
+          {snackbar.msg}
         </Alert>
-      )}
+      </Snackbar>
 
       <Grid container spacing={4}>
         {/* Personal Information */}
         <Grid item xs={12} md={6}>
-          <Card variant="outlined" sx={{ borderRadius: 3, height: "100%" }}>
+          <Card
+            elevation={0}
+            sx={{
+              borderRadius: 5,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
             <CardContent sx={{ p: 4 }}>
-              <Box display="flex" alignItems="center" gap={2} mb={3}>
-                <UserCircleIcon className="h-6 w-6 text-indigo-600" />
-                <Typography variant="h6" fontWeight="bold">
-                  Personal Info
+              <Box display="flex" alignItems="center" gap={1.5} mb={4}>
+                <UserCircleIcon
+                  style={{
+                    width: 24,
+                    height: 24,
+                    color: theme.palette.primary.main,
+                  }}
+                />
+                <Typography variant="h6" fontWeight="800">
+                  Account Details
                 </Typography>
               </Box>
 
@@ -88,26 +168,40 @@ const Profile = () => {
                 <Box display="flex" flexDirection="column" gap={3}>
                   <TextField
                     label="Full Name"
+                    variant="outlined"
                     fullWidth
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
+                    InputProps={{ sx: { borderRadius: 3 } }}
                   />
                   <TextField
                     label="Email Address"
+                    variant="outlined"
                     fullWidth
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
+                    InputProps={{ sx: { borderRadius: 3 } }}
                   />
                   <Button
                     variant="contained"
                     type="submit"
-                    sx={{ alignSelf: "flex-start" }}
+                    disabled={loading}
+                    sx={{
+                      borderRadius: 3,
+                      py: 1.5,
+                      fontWeight: "bold",
+                      textTransform: "none",
+                    }}
                   >
-                    Update Profile
+                    {loading ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      "Save Changes"
+                    )}
                   </Button>
                 </Box>
               </form>
@@ -117,11 +211,24 @@ const Profile = () => {
 
         {/* Security / Password */}
         <Grid item xs={12} md={6}>
-          <Card variant="outlined" sx={{ borderRadius: 3, height: "100%" }}>
+          <Card
+            elevation={0}
+            sx={{
+              borderRadius: 5,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
             <CardContent sx={{ p: 4 }}>
-              <Box display="flex" alignItems="center" gap={2} mb={3}>
-                <KeyIcon className="h-6 w-6 text-indigo-600" />
-                <Typography variant="h6" fontWeight="bold">
+              <Box display="flex" alignItems="center" gap={1.5} mb={4}>
+                <KeyIcon
+                  style={{
+                    width: 24,
+                    height: 24,
+                    color: theme.palette.primary.main,
+                  }}
+                />
+                <Typography variant="h6" fontWeight="800">
                   Security
                 </Typography>
               </Box>
@@ -139,6 +246,7 @@ const Profile = () => {
                         currentPassword: e.target.value,
                       })
                     }
+                    InputProps={{ sx: { borderRadius: 3 } }}
                   />
                   <TextField
                     label="New Password"
@@ -148,14 +256,24 @@ const Profile = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, newPassword: e.target.value })
                     }
+                    InputProps={{ sx: { borderRadius: 3 } }}
                   />
                   <Button
                     variant="outlined"
-                    color="primary"
                     type="submit"
-                    sx={{ alignSelf: "flex-start" }}
+                    disabled={loading}
+                    sx={{
+                      borderRadius: 3,
+                      py: 1.5,
+                      fontWeight: "bold",
+                      textTransform: "none",
+                    }}
                   >
-                    Change Password
+                    {loading ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      "Update Password"
+                    )}
                   </Button>
                 </Box>
               </form>

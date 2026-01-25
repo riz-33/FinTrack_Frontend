@@ -14,14 +14,42 @@ import {
   Snackbar,
   CircularProgress,
   InputAdornment,
+  Avatar,
 } from "@mui/material";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowLeftIcon,
+  BanknotesIcon,
+  BuildingLibraryIcon,
+  CreditCardIcon,
+  WalletIcon,
+} from "@heroicons/react/24/outline";
 
+// Added colors and icons for better UX
 const accountTypes = [
-  { value: "bank", label: "Bank Account" },
-  { value: "savings", label: "Savings/Investment" },
-  { value: "cash", label: "Cash/Wallet" },
-  { value: "credit", label: "Credit Card" },
+  {
+    value: "bank",
+    label: "Bank Account",
+    icon: <BuildingLibraryIcon className="h-5 w-5" />,
+    color: "#3b82f6",
+  },
+  {
+    value: "savings",
+    label: "Savings/Investment",
+    icon: <BanknotesIcon className="h-5 w-5" />,
+    color: "#10b981",
+  },
+  {
+    value: "cash",
+    label: "Cash/Wallet",
+    icon: <WalletIcon className="h-5 w-5" />,
+    color: "#f59e0b",
+  },
+  {
+    value: "credit",
+    label: "Credit Card",
+    icon: <CreditCardIcon className="h-5 w-5" />,
+    color: "#ef4444",
+  },
 ];
 
 const currencyOptions = [
@@ -47,60 +75,43 @@ const CreateAccount = () => {
     currency: "USD",
   });
 
-  const showToast = (message, severity = "success") => {
-    setSnackbar({ open: true, message, severity });
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
+  const selectedType = accountTypes.find((t) => t.value === formData.type);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post("/accounts", formData);
-      showToast("Account created successfully!"); // Success Toast
-      setTimeout(() => {
-        navigate("/accounts");
-      }, 1500);
+      await api.post("/accounts", {
+        ...formData,
+        balance: Number(formData.balance),
+      });
+      setSnackbar({
+        open: true,
+        message: "Account created successfully!",
+        severity: "success",
+      });
+      setTimeout(() => navigate("/accounts"), 1500);
     } catch (err) {
-      showToast(
-        err.response?.data?.message || "Account creation failed",
-        "error",
-      ); // Error Toast
-      console.error(err);
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.message || "Failed",
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box sx={{ maxWidth: 600, mx: "auto" }}>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: "100%", borderRadius: 2 }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-
-      {/* Back Button */}
+    <Box sx={{ maxWidth: 550, mx: "auto", py: 4 }}>
       <Button
         startIcon={<ArrowLeftIcon className="h-4 w-4" />}
         onClick={() => navigate("/accounts")}
         sx={{
+          mb: 2,
           textTransform: "none",
           color: "text.secondary",
-          "&:hover": { color: "primary.main" },
+          fontWeight: 600,
         }}
       >
         Back to Accounts
@@ -108,145 +119,180 @@ const CreateAccount = () => {
 
       <Card
         variant="outlined"
-        sx={{ borderRadius: 4, boxShadow: "0px 4px 20px rgba(0,0,0,0.05)" }}
+        sx={{
+          borderRadius: 5,
+          boxShadow: "0px 10px 30px rgba(0,0,0,0.04)",
+          borderTop: `6px solid ${selectedType?.color || "#ddd"}`,
+        }}
       >
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h5" fontWeight="800" gutterBottom>
-            Add New Account
-          </Typography>
-          <Typography variant="body2" color="textSecondary" mb={4}>
-            Enter the details of your bank account, wallet, or savings.
-          </Typography>
+          <Box display="flex" alignItems="center" gap={2} mb={3}>
+            <Avatar
+              sx={{
+                bgcolor: `${selectedType?.color}15`,
+                color: selectedType?.color,
+                width: 56,
+                height: 56,
+              }}
+            >
+              {selectedType?.icon}
+            </Avatar>
+            <Box>
+              <Typography variant="h5" fontWeight="800">
+                New Account
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Setup your starting balance
+              </Typography>
+            </Box>
+          </Box>
 
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              <Grid size={12} item xs={12}>
+              <Grid item xs={12}>
                 <TextField
-                  size="small"
                   fullWidth
                   label="Account Name"
-                  placeholder="e.g. HBL Main Account or Pocket Cash"
+                  placeholder="e.g. Chase Checkings"
                   required
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                 />
               </Grid>
 
-              <Grid size={6} item xs={12} md={6}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   select
-                  size="small"
-                  required
                   fullWidth
                   label="Account Type"
                   value={formData.type}
                   onChange={(e) =>
                     setFormData({ ...formData, type: e.target.value })
                   }
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                 >
                   {accountTypes.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
-                      {option.label}
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Box sx={{ color: option.color, display: "flex" }}>
+                          {option.icon}
+                        </Box>
+                        {option.label}
+                      </Box>
                     </MenuItem>
                   ))}
                 </TextField>
               </Grid>
 
-              <Grid size={6} item xs={12} md={6}>
+              <Grid item xs={12} md={6}>
                 <TextField
-                  fullWidth
-                  size="small"
-                  required
-                  label="Initial Balance"
-                  type="number"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Typography
-                          sx={{ fontWeight: "bold", color: "text.primary" }}
-                        >
-                          {currencyOptions.find(
-                            (c) => c.value === formData.currency,
-                          )?.symbol || "$"}
-                        </Typography>
-                      </InputAdornment>
-                    ),
-                  }}
-                  value={formData.balance}
-                  onChange={(e) =>
-                    setFormData({ ...formData, balance: e.target.value })
-                  }
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
-                />
-              </Grid>
-
-              {/* <Grid size={6} item xs={12} md={6}>
-                <TextField
-                  size="small"
                   select
-                  required
                   fullWidth
                   label="Currency"
                   value={formData.currency}
                   onChange={(e) =>
                     setFormData({ ...formData, currency: e.target.value })
                   }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                 >
-                  {currencyOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
+                  {currencyOptions.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
                     </MenuItem>
                   ))}
                 </TextField>
-              </Grid> */}
-            </Grid>
+              </Grid>
 
-            <Grid className='mt-4' item xs={12}>
-              <Box display="flex" gap={2}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={loading}
-                  disableElevation
-                  sx={{
-                    borderRadius: 2.5,
-                    px: 4,
-                    textTransform: "none",
-                    fontWeight: "bold",
-                    flex: 1,
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Initial Balance"
+                  type="number"
+                  required
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Typography fontWeight="bold">
+                          {
+                            currencyOptions.find(
+                              (c) => c.value === formData.currency,
+                            )?.symbol
+                          }
+                        </Typography>
+                      </InputAdornment>
+                    ),
+                    sx: {
+                      borderRadius: 3,
+                      fontSize: "1.2rem",
+                      fontWeight: "bold",
+                    },
                   }}
-                >
-                  {loading ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    "Create Account"
-                  )}
-                </Button>
+                  value={formData.balance}
+                  onChange={(e) =>
+                    setFormData({ ...formData, balance: e.target.value })
+                  }
+                />
+              </Grid>
 
-                <Button
-                  // fullWidth
-                  variant="outlined"
-                  // size="large"
-                  onClick={() => navigate("/accounts")}
-                  sx={{
-                    borderRadius: 2.5,
-                    px: 4,
-                    textTransform: "none",
-                    fontWeight: "bold",
-                    // flex: 1,
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
+              <Grid item xs={12}>
+                <Box display="flex" gap={2} mt={1}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    fullWidth
+                    disableElevation
+                    disabled={loading}
+                    sx={{
+                      borderRadius: 3,
+                      py: 1.5,
+                      fontWeight: "bold",
+                      textTransform: "none",
+                    }}
+                  >
+                    {loading ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      "Create Account"
+                    )}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => navigate("/accounts")}
+                    sx={{
+                      borderRadius: 3,
+                      px: 4,
+                      textTransform: "none",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              </Grid>
             </Grid>
           </form>
         </CardContent>
       </Card>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ borderRadius: 2 }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

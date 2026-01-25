@@ -39,6 +39,7 @@ import {
 import EmptyState from "../components/common/EmptyState";
 import { useNavigate } from "react-router-dom";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 
 const Accounts = () => {
   const [accounts, setAccounts] = useState([]);
@@ -138,158 +139,231 @@ const Accounts = () => {
     fetchAccounts();
   }, []);
 
-  // Helper to pick an icon based on account type
-  const getAccountIcon = (type) => {
+  const totalBalance = accounts.reduce(
+    (acc, curr) => acc + (Number(curr.balance) || 0),
+    0,
+  );
+
+  const getAccountStyles = (type) => {
     switch (type?.toLowerCase()) {
       case "bank":
-        return <BuildingLibraryIcon className="h-6 w-6 text-blue-600" />;
+        return {
+          color: "#2563eb",
+          bg: "#eff6ff",
+          icon: <BuildingLibraryIcon className="h-6 w-6" />,
+        };
       case "savings":
-        return <WalletIcon className="h-6 w-6 text-orange-600" />;
+        return {
+          color: "#7c3aed",
+          bg: "#f5f3ff",
+          icon: <BanknotesIcon className="h-6 w-6" />,
+        };
       case "cash":
-        return <BanknotesIcon className="h-6 w-6 text-green-600" />;
+        return {
+          color: "#059669",
+          bg: "#ecfdf5",
+          icon: <WalletIcon className="h-6 w-6" />,
+        };
+      case "credit":
+        return {
+          color: "#dc2626",
+          bg: "#fef2f2",
+          icon: <CreditCardIcon className="h-6 w-6" />,
+        };
       default:
-        return <CreditCardIcon className="h-6 w-6 text-gray-600" />;
+        return {
+          color: "#4b5563",
+          bg: "#f3f4f6",
+          icon: <CreditCardIcon className="h-6 w-6" />,
+        };
     }
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
-      {/* Header Section */}
+    <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: "auto" }}>
+      {/* 2. Enhanced Header Section */}
       <Box
         display="flex"
         justifyContent="space-between"
-        alignItems="flex-start"
-        mb={4}
+        alignItems="center"
+        mb={6}
+        flexWrap="wrap"
+        gap={2}
       >
         <Box>
-          <Typography variant="h5" fontWeight="800" gutterBottom>
-            My Accounts
+          <Typography
+            variant="h4"
+            fontWeight="900"
+            sx={{ letterSpacing: "-0.5px" }}
+          >
+            Accounts
           </Typography>
-          <Typography variant="body1" color="textSecondary">
-            Manage your banks, wallets, and savings.
+          <Typography variant="body1" color="text.secondary">
+            Manage your financial sources in one place.
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          disableElevation
-          onClick={() => navigate("/accounts/add")}
-          startIcon={<PlusIcon className="h-5 w-5" />}
-          sx={{ borderRadius: 2.5, px: 3, py: 1, textTransform: "none" }}
-        >
-          Add Account
-        </Button>
+
+        <Box display="flex" gap={2}>
+          {/* Total Net Worth Mini-Card */}
+          <Card
+            variant="outlined"
+            sx={{
+              px: 3,
+              py: 1,
+              borderRadius: 4,
+              bgcolor: "background.paper",
+              display: { xs: "none", sm: "block" },
+            }}
+          >
+            <Typography
+              variant="caption"
+              fontWeight="700"
+              color="text.secondary"
+              sx={{ textTransform: "uppercase" }}
+            >
+              Total Net Worth
+            </Typography>
+            <Typography variant="h6" fontWeight="800" color="primary.main">
+              ${totalBalance.toLocaleString()}
+            </Typography>
+          </Card>
+
+          <Button
+            variant="contained"
+            disableElevation
+            onClick={() => navigate("/accounts/add")}
+            startIcon={<PlusIcon className="h-5 w-5" />}
+            sx={{
+              borderRadius: 3,
+              px: 3,
+              fontWeight: "bold",
+              textTransform: "none",
+            }}
+          >
+            Add Account
+          </Button>
+        </Box>
       </Box>
-      {/* Accounts Grid */}
+
       {accounts.length === 0 && !loading ? (
         <EmptyState
           title="No accounts linked"
-          message="Add your first bank account or wallet to start tracking."
-          actionLabel="Create Account"
+          message="Link a bank account or wallet to start tracking your net worth."
+          actionLabel="Add My First Account"
           actionPath="/accounts/add"
         />
       ) : (
         <Grid container spacing={3}>
-          {accounts.map((acc) => (
-            <Grid size={3} item xs={12} sm={6} md={4} key={acc._id}>
-              <Card
-                variant="outlined"
-                sx={{
-                  borderRadius: 4,
-                  border: "1px solid",
-                  borderColor: "divider",
-                  transition: "all 0.3s ease-in-out",
-                  "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: "0px 10px 20px rgba(0,0,0,0.05)",
-                    // borderColor: "primary.light",
-                  },
-                }}
-              >
-                <CardContent sx={{ p: 3 }}>
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="flex-start"
-                    mb={3}
-                  >
+          {accounts.map((acc) => {
+            const styles = getAccountStyles(acc.type);
+            return (
+              <Grid item xs={12} sm={6} md={4} key={acc._id}>
+                <Card
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 5,
+                    position: "relative",
+                    overflow: "visible",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": {
+                      transform: "translateY(-6px)",
+                      boxShadow: "0px 12px 30px rgba(0,0,0,0.08)",
+                      borderColor: styles.color,
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 3 }}>
                     <Box
-                      sx={{
-                        p: 1.5,
-                        borderRadius: 3,
-                        bgcolor: "grey.50",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      {getAccountIcon(acc.type)}
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Chip
-                        label={acc.type?.toUpperCase()}
-                        size="small"
-                        sx={{
-                          fontWeight: "bold",
-                          fontSize: "0.65rem",
-                          bgcolor: "blue.50",
-                          color: "blue.700",
-                        }}
-                      />
-                      <IconButton
-                        size="small"
-                        sx={{ color: "text.secondary" }}
-                        onClick={(e) => handleOpenMenu(e, acc)}
-                      >
-                        <MoreVertIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                  <Box mb={1}>
-                    <Typography variant="h6" fontWeight="700" noWrap>
-                      {acc.name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="textSecondary"
-                      gutterBottom
-                      sx={{ fontFamily: "monospace", letterSpacing: 1 }}
-                    >
-                      **** {acc.lastFour || "8821"}
-                    </Typography>
-                  </Box>
-                  <Divider sx={{ mb: 1, borderStyle: "dashed" }} />
-                  <Box display="flex" flexDirection="column" gap={0.5}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      fontWeight="600"
-                      sx={{ textTransform: "uppercase" }}
-                    >
-                      Current Balance
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      color="text.primary"
-                      fontWeight="800"
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      mb={4}
                     >
                       <Box
-                        component="span"
                         sx={{
-                          fontSize: "1rem",
-                          mr: 0.5,
-                          color: "text.secondary",
+                          p: 1.5,
+                          borderRadius: 3,
+                          bgcolor: styles.bg,
+                          color: styles.color,
                         }}
                       >
-                        {acc.currency?.toUpperCase() || "USD"}
+                        {styles.icon}
                       </Box>
-                      {acc.balance?.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                      })}
+                      <IconButton
+                        onClick={(e) => handleOpenMenu(e, acc)}
+                        size="small"
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Box>
+
+                    <Typography
+                      variant="h6"
+                      fontWeight="800"
+                      noWrap
+                      sx={{ mb: 0.5 }}
+                    >
+                      {acc.name}
                     </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+
+                    <Box display="flex" alignItems="center" gap={1} mb={3}>
+                      <Chip
+                        label={acc.type}
+                        size="small"
+                        sx={{
+                          bgcolor: styles.bg,
+                          color: styles.color,
+                          fontWeight: "bold",
+                          fontSize: "0.7rem",
+                          textTransform: "uppercase",
+                        }}
+                      />
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ fontFamily: "monospace" }}
+                      >
+                        •••• {acc.lastFour || "8821"}
+                      </Typography>
+                    </Box>
+
+                    <Divider sx={{ my: 2, borderStyle: "dashed" }} />
+
+                    <Box>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        fontWeight="700"
+                      >
+                        CURRENT BALANCE
+                      </Typography>
+                      <Typography
+                        variant="h5"
+                        fontWeight="900"
+                        sx={{
+                          display: "flex",
+                          alignItems: "baseline",
+                          gap: 0.5,
+                        }}
+                      >
+                        <Typography
+                          component="span"
+                          variant="subtitle1"
+                          fontWeight="700"
+                          color="text.secondary"
+                        >
+                          {acc.currency || "USD"}
+                        </Typography>
+                        {acc.balance?.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
       )}
 

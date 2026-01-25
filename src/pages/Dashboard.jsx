@@ -9,10 +9,24 @@ import {
   CircularProgress,
   Skeleton,
   useTheme,
+  TextField,
+  Avatar,
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Button,
 } from "@mui/material";
+import {
+  TrendingUp,
+  TrendingDown,
+  AccountBalanceWallet,
+} from "@mui/icons-material";
 import ExpensePie from "../components/charts/ExpensePie";
 import TrendLine from "../components/charts/TrendLine";
 import EmptyState from "../components/common/EmptyState";
+import RecentTransactions from "../components/charts/RecentTransactions";
 import {
   Bar,
   BarChart,
@@ -23,310 +37,369 @@ import {
   YAxis,
 } from "recharts";
 import { CurrencyContext } from "../context/ThemeContext";
+import BalanceTrend from "../components/charts/BalanceTrend";
 
 const Dashboard = () => {
+  const currentMonth = new Date().toISOString().slice(0, 7);
   const [summary, setSummary] = useState({});
   const [pieData, setPieData] = useState([]);
   const [trendData, setTrendData] = useState([]);
-  const [loading, setLoading] = useState(true); // New Loading State
+  const [loading, setLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === "dark";
   const { formatValue } = useContext(CurrencyContext);
 
-  const chartColors = {
-    text: isDarkMode ? "#94a3b8" : "#64748b", // slate-400 vs slate-500
-    grid: isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
-    tooltipBg: isDarkMode ? "#1e293b" : "#ffffff",
-    tooltipBorder: isDarkMode ? "#334155" : "#e2e8f0",
-  };
-
   useEffect(() => {
-    const currentMonth = "2026-01";
-
     const fetchDashboardData = async () => {
       try {
-        setLoading(true); // Start loading
+        setLoading(true);
         const [summaryRes, pieRes, trendRes] = await Promise.all([
-          api.get(`/reports/dashboard?month=${currentMonth}`),
-          api.get(`/reports/expense-category?month=${currentMonth}`),
-          api.get(`/reports/daily-trend?month=${currentMonth}`),
+          api.get("/reports/dashboard", { params: { month: selectedMonth } }),
+          api.get("/reports/expense-category", {
+            params: { month: selectedMonth },
+          }),
+          api.get("/reports/daily-trend", { params: { month: selectedMonth } }),
         ]);
-
+        // console.log(pieRes.data);
+        // Just set the data! The backend already formatted it.
         setSummary(summaryRes.data);
-        setPieData(pieRes.data);
-        setTrendData(trendRes.data);
+        setPieData(pieRes.data); // Expects [{ name: "Food", value: 100 }]
+        setTrendData(trendRes.data); // Expects [{ day: 1, amount: 50 }]
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
-        setLoading(false); // Stop loading regardless of success/fail
+        setLoading(false);
       }
     };
-
     fetchDashboardData();
+  }, [selectedMonth]);
+
+  const [netWorthHistory, setNetWorthHistory] = useState([]);
+
+  useEffect(() => {
+    const fetchNetWorth = async () => {
+      // Assuming you have an endpoint for historical balance
+      const res = await api.get("/reports/net-worth-history");
+      setNetWorthHistory(res.data);
+      // Data looks like: [{ month: 'Oct', balance: 12000 }, { month: 'Nov', balance: 12500 }, ...]
+    };
+    fetchNetWorth();
   }, []);
 
-  // Helper to show Skeleton or Content
-  const renderCardContent = (label, value) => (
-    <CardContent style={{ textAlign: "center" }}>
-      <Typography color="textSecondary" variant="overline">
-        {label}
-      </Typography>
-      {loading ? (
-        <Skeleton variant="text" width="60%" height={40} sx={{ mx: "auto" }} />
-      ) : (
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: "bold",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {formatValue(value || 0).toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-          })}
-        </Typography>
-      )}
-    </CardContent>
-  );
+  const savingsRate =
+    summary.income > 0
+      ? (((summary.income - summary.expense) / summary.income) * 100).toFixed(0)
+      : 0;
 
-  const getInsights = () => {
-    if (pieData.length === 0) return null;
-    // Sort to find the highest expense category
-    const topCategory = [...pieData].sort((a, b) => b.value - a.value)[0];
-    return topCategory;
+  const topCat =
+    pieData.length > 0
+      ? [...pieData].sort((a, b) => b.value - a.value)[0]
+      : null;
+
+  // Calculate savings rate with safety checks
+  const savingsAmount = (summary.income || 0) - (summary.expense || 0);
+
+  // Insight Logic: Determine the "Mood" of the month
+  const getInsightIcon = () => {
+    if (savingsRate > 20) return "🚀";
+    if (savingsRate > 0) return "💰";
+    return "⚠️";
   };
 
-  const topCat = getInsights();
+  const StatCard = ({ title, value, icon, color }) => (
+    <Card
+      elevation={0}
+      sx={{
+        borderRadius: 5,
+        border: "1px solid",
+        borderColor: "divider",
+        transition: "transform 0.2s",
+        "&:hover": { transform: "translateY(-4px)" },
+        height: "100%",
+      }}
+    >
+      <CardContent sx={{ p: 3 }}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="flex-start"
+        >
+          <Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              fontWeight="800"
+              sx={{ textTransform: "uppercase", mb: 1, display: "block" }}
+            >
+              {title}
+            </Typography>
+            {loading ? (
+              <Skeleton width={120} height={40} />
+            ) : (
+              <Typography
+                variant="h4"
+                fontWeight="900"
+                sx={{ letterSpacing: "-1px" }}
+              >
+                {formatValue(value || 0)}
+              </Typography>
+            )}
+          </Box>
+          <Avatar
+            variant="rounded"
+            sx={{
+              bgcolor: `${color}15`,
+              color: color,
+              width: 48,
+              height: 48,
+              borderRadius: 3,
+            }}
+          >
+            {icon}
+          </Avatar>
+        </Box>
+      </CardContent>
+    </Card>
+  );
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      {/* Top Stats Row */}
-      <Grid container spacing={4} mb={3}>
-        <Grid size={4} item xs={12} md={4}>
-          <Card variant="outlined">
-            {renderCardContent("TOTAL BALANCE", summary.totalBalance)}
-          </Card>
+    <Box
+      sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, maxWidth: 1400, margin: "auto" }}
+    >
+      {/* 1. Header with Month Selector */}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="flex-end"
+        mb={5}
+        gap={2}
+      >
+        <Box>
+          <Typography
+            variant="h3"
+            fontWeight="900"
+            sx={{ letterSpacing: "-2px", lineHeight: 1 }}
+          >
+            Overview
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+            Summary for{" "}
+            {new Date(selectedMonth + "-01").toLocaleString("default", {
+              month: "long",
+              year: "numeric",
+            })}
+          </Typography>
+        </Box>
+        <TextField
+          type="month"
+          size="small"
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          InputProps={{ sx: { borderRadius: 3, fontWeight: "bold" } }}
+        />
+      </Box>
+
+      {/* 2. Primary Metrics */}
+      <Grid container spacing={3} mb={4}>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Total Net Worth"
+            value={summary.totalBalance}
+            color="#6366f1"
+            icon={<AccountBalanceWallet />}
+          />
         </Grid>
-        <Grid size={4} item xs={12} md={4}>
-          <Card variant="outlined">
-            {renderCardContent("INCOME", summary.income)}
-          </Card>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Monthly Income"
+            value={summary.income}
+            color="#10b981"
+            icon={<TrendingUp />}
+          />
         </Grid>
-        <Grid size={4} item xs={12} md={4}>
-          <Card variant="outlined">
-            {renderCardContent("EXPENSE", summary.expense)}
-          </Card>
+        <Grid item xs={12} sm={12} md={4}>
+          <StatCard
+            title="Monthly Expenses"
+            value={summary.expense}
+            color="#f43f5e"
+            icon={<TrendingDown />}
+          />
         </Grid>
       </Grid>
 
-      {/* Charts Row */}
-      <Grid container spacing={3} mt={1}>
-        <Grid size={6} item xs={12} md={6}>
-          <Card variant="outlined" sx={{ minHeight: 350 }}>
-            <CardContent>
-              <Typography variant="h6" mb={2}>
-                Expense by Category
-              </Typography>
-
+      <Grid container spacing={3}>
+        {/* 3. Main Spending Chart */}
+        <Grid item xs={12} lg={8}>
+          <Card variant="outlined" sx={{ borderRadius: 5, p: 2 }}>
+            <Typography variant="h6" fontWeight="800" mb={3} px={2}>
+              Daily Spending Trend
+            </Typography>
+            <Box height={350}>
               {loading ? (
-                <Box display="flex" justifyContent="center" py={10}>
-                  <CircularProgress />
-                </Box>
-              ) : pieData.length > 0 ? (
-                <ExpensePie data={pieData} />
-              ) : (
-                <EmptyState
-                  title="No Expenses Yet"
-                  message="We couldn't find any expenses for this month. Start tracking to see the breakdown!"
+                <Skeleton
+                  variant="rectangular"
+                  height="100%"
+                  sx={{ borderRadius: 4 }}
                 />
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid size={6} item xs={12} md={6}>
-          <Card variant="outlined" sx={{ minHeight: 350 }}>
-            <CardContent>
-              <Typography variant="h6" mb={2}>
-                Daily Expense Trend
-              </Typography>
-
-              {loading ? (
-                <Box display="flex" justifyContent="center" py={10}>
-                  <TrendLine />
-                </Box>
-              ) : trendData.length > 0 ? (
+              ) : (
                 <TrendLine data={trendData} />
-              ) : (
-                <EmptyState
-                  title="No Expenses Yet"
-                  message="We couldn't find any expenses for this month. Start tracking to see the breakdown!"
-                />
               )}
-            </CardContent>
+            </Box>
           </Card>
         </Grid>
 
-        <Grid container spacing={3} mt={1}>
-          <Grid item xs={12}>
-            <Card
-              variant="outlined"
+        {/* 4. Category Pie Chart */}
+        <Grid item xs={12} lg={4}>
+          <Card
+            variant="outlined"
+            sx={{ borderRadius: 5, p: 2, height: "100%" }}
+          >
+            <Typography variant="h6" fontWeight="800" mb={3} px={2}>
+              By Category
+            </Typography>
+            <Box
+              height={350}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              {loading ? <CircularProgress /> : <ExpensePie data={pieData} />}
+            </Box>
+          </Card>
+        </Grid>
+
+        {/* 5. Savings & Smart Insights */}
+        <Grid item xs={12} md={6}>
+          <Card variant="outlined" sx={{ borderRadius: 5, p: 3 }}>
+            <Box display="flex" justifyContent="space-between" mb={2}>
+              <Typography variant="subtitle1" fontWeight="800">
+                Monthly Savings Rate
+              </Typography>
+              <Typography
+                variant="h6"
+                fontWeight="900"
+                color={savingsRate >= 0 ? "success.main" : "error.main"}
+              >
+                {savingsRate}%
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={Math.max(0, Math.min(savingsRate, 100))}
               sx={{
-                p: 2,
-                borderRadius: 3,
-                height: "100%",
-                background: isDarkMode
-                  ? "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
-                  : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+                height: 12,
+                borderRadius: 6,
+                bgcolor: "grey.100",
+                "& .MuiLinearProgress-bar": { borderRadius: 6 },
               }}
+            />
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mt: 2, display: "block", fontWeight: 600 }}
             >
-              <CardContent>
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                  Monthly Spending Overview
+              {savingsRate >= 0
+                ? `Great! You've retained ${formatValue(savingsAmount)} of your income.`
+                : `Caution: You spent ${formatValue(Math.abs(savingsAmount))} more than you earned.`}
+            </Typography>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card
+            sx={{
+              borderRadius: 5,
+              p: 3,
+              background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+              color: "white",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
+            <Box display="flex" alignItems="center" gap={2}>
+              <Typography variant="h3">{getInsightIcon()}</Typography>
+              <Box>
+                <Typography variant="h6" fontWeight="800">
+                  Smart Insight
                 </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  {topCat
+                    ? `Your spending in "${topCat.name}" is the highest. Lowering this by 10% could save you ${formatValue(topCat.value * 0.1)} next month.`
+                    : "Track more transactions to receive personalized AI insights."}
+                </Typography>
+              </Box>
+            </Box>
+          </Card>
+        </Grid>
 
-                <Grid container spacing={4}>
-                  {/* Left Side: Insight Text */}
-                  <Grid item xs={12} md={4}>
-                    <Box py={2}>
-                      <Typography
-                        variant="body2"
-                        color="textSecondary"
-                        gutterBottom
-                      >
-                        MOST EXPENSIVE CATEGORY
-                      </Typography>
-                      {loading ? (
-                        <Skeleton width="50%" />
-                      ) : (
-                        <Typography
-                          variant="h5"
-                          fontWeight="bold"
-                          color="primary"
-                        >
-                          {topCat ? topCat.name : "N/A"}
-                        </Typography>
-                      )}
+        {/* 6. Recent Activity */}
+        <Grid item xs={12}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mt={4}
+            mb={2}
+          >
+            <Typography variant="h5" fontWeight="900">
+              Recent Transactions
+            </Typography>
+            <Button size="small" sx={{ fontWeight: 800 }}>
+              View Statement
+            </Button>
+          </Box>
+          {loading ? (
+            <Skeleton
+              variant="rectangular"
+              height={200}
+              sx={{ borderRadius: 5 }}
+            />
+          ) : (
+            <RecentTransactions
+              transactions={summary.recentTransactions || []}
+              formatValue={formatValue}
+            />
+          )}
+        </Grid>
 
-                      <Box mt={3}>
-                        <Typography variant="body2" color="textSecondary">
-                          You've spent{" "}
-                          <strong>${summary.expense?.toLocaleString()}</strong>{" "}
-                          this month.
-                          {topCat &&
-                            ` Your ${topCat.name} expenses account for ${((topCat.value / summary.expense) * 100).toFixed(1)}% of total spending.`}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Grid>
-
-                  {/* Right Side: The Bar Chart */}
-                  <Grid item xs={12} md={8}>
-                    <div style={{ width: "100%", height: 250 }}>
-                      <ResponsiveContainer>
-                        <BarChart data={pieData}>
-                          {" "}
-                          {/* Mapping category data to bars */}
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            stroke={chartColors.grid}
-                            vertical={false}
-                          />
-                          <XAxis
-                            dataKey="name"
-                            stroke={chartColors.text}
-                            fontSize={10}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <YAxis
-                            stroke={chartColors.text}
-                            fontSize={10}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: chartColors.tooltipBg,
-                              borderColor: chartColors.tooltipBorder,
-                              borderRadius: "8px",
-                              color: isDarkMode ? "#fff" : "#000",
-                            }}
-                          />
-                          <Bar
-                            dataKey="value"
-                            fill={isDarkMode ? "#818cf8" : "#4f46e5"}
-                            radius={[4, 4, 0, 0]}
-                            barSize={40}
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* New Budget Section */}
-          <Grid item xs={12} mt={2}>
-            <Card
-              variant="outlined"
-              className="dark:bg-gray-800 dark:border-gray-700"
+        <Grid item xs={12}>
+          <Card variant="outlined" sx={{ borderRadius: 5, p: 3 }}>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={3}
             >
-              <CardContent>
+              <Box>
+                <Typography variant="h6" fontWeight="900">
+                  Net Worth Growth
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total balance across all accounts over the last 6 months
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: "right" }}>
+                <Typography variant="h5" fontWeight="900" color="primary.main">
+                  +12.5%
+                </Typography>
                 <Typography
-                  variant="h6"
-                  mb={3}
-                  className="dark:text-white font-bold"
+                  variant="caption"
+                  fontWeight="bold"
+                  color="success.main"
                 >
-                  Budget Trackers
+                  UP FROM LAST QUARTER
                 </Typography>
-                <Grid container spacing={4}>
-                  {pieData.slice(0, 3).map((category) => (
-                    <Grid item xs={12} md={4} key={category.name}>
-                      <div className="flex justify-between mb-1">
-                        <Typography
-                          variant="body2"
-                          className="text-gray-600 dark:text-gray-400 font-medium"
-                        >
-                          {category.name}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          className="text-gray-900 dark:text-gray-200 font-bold"
-                        >
-                          {((category.value / 1000) * 100).toFixed(0)}%{" "}
-                          {/* Assuming 1000 is the limit for now */}
-                        </Typography>
-                      </div>
-                      {/* The Actual Progress Bar */}
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                        <div
-                          className={`h-2.5 rounded-full transition-all duration-500 ${
-                            category.value / 1000 > 0.8
-                              ? "bg-red-500"
-                              : "bg-blue-600"
-                          }`}
-                          style={{
-                            width: `${Math.min((category.value / 1000) * 100, 100)}%`,
-                          }}
-                        ></div>
-                      </div>
-                      <Typography
-                        variant="caption"
-                        className="text-gray-500 mt-1 block"
-                      >
-                        ${category.value} spent of $1,000 limit
-                      </Typography>
-                    </Grid>
-                  ))}
-                </Grid>
-              </CardContent>
-            </Card>
-          </Grid>
+              </Box>
+            </Box>
+
+            <Box height={400}>
+              <BalanceTrend data={netWorthHistory} formatValue={formatValue} />
+            </Box>
+          </Card>
         </Grid>
       </Grid>
     </Box>
