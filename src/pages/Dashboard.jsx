@@ -12,10 +12,6 @@ import {
   TextField,
   Avatar,
   LinearProgress,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
   Button,
 } from "@mui/material";
 import {
@@ -27,19 +23,12 @@ import ExpensePie from "../components/charts/ExpensePie";
 import TrendLine from "../components/charts/TrendLine";
 import EmptyState from "../components/common/EmptyState";
 import RecentTransactions from "../components/charts/RecentTransactions";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { CurrencyContext } from "../context/ThemeContext";
 import BalanceTrend from "../components/charts/BalanceTrend";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const currentMonth = new Date().toISOString().slice(0, 7);
   const [summary, setSummary] = useState({});
   const [pieData, setPieData] = useState([]);
@@ -139,8 +128,8 @@ const Dashboard = () => {
               <Skeleton width={120} height={40} />
             ) : (
               <Typography
-                variant="h4"
-                fontWeight="900"
+                variant="h5"
+                fontWeight="700"
                 sx={{ letterSpacing: "-1px" }}
               >
                 {formatValue(value || 0)}
@@ -166,25 +155,25 @@ const Dashboard = () => {
 
   return (
     <Box
-      sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, maxWidth: 1400, margin: "auto" }}
+      sx={{ flexGrow: 1, maxWidth: 1400, margin: "auto" }}
     >
       {/* 1. Header with Month Selector */}
       <Box
         display="flex"
         justifyContent="space-between"
-        alignItems="flex-end"
-        mb={5}
+        alignItems="center"
+        mb={2}
         gap={2}
       >
         <Box>
           <Typography
-            variant="h3"
-            fontWeight="900"
+            variant="h4"
+            fontWeight="700"
             sx={{ letterSpacing: "-2px", lineHeight: 1 }}
           >
             Overview
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             Summary for{" "}
             {new Date(selectedMonth + "-01").toLocaleString("default", {
               month: "long",
@@ -202,16 +191,21 @@ const Dashboard = () => {
       </Box>
 
       {/* 2. Primary Metrics */}
-      <Grid container spacing={3} mb={4}>
-        <Grid item xs={12} sm={6} md={4}>
+      <Grid
+        container
+        spacing={{ xs: 2, md: 3 }}
+        columns={{ xs: 2, sm: 8, md: 12 }}
+        mb={3}
+      >
+        <Grid size={{ xs: 2, sm: 4, md: 4 }}>
           <StatCard
-            title="Total Net Worth"
+            title="Total Balance"
             value={summary.totalBalance}
             color="#6366f1"
             icon={<AccountBalanceWallet />}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid size={{ xs: 2, sm: 4, md: 4 }}>
           <StatCard
             title="Monthly Income"
             value={summary.income}
@@ -219,7 +213,7 @@ const Dashboard = () => {
             icon={<TrendingUp />}
           />
         </Grid>
-        <Grid item xs={12} sm={12} md={4}>
+        <Grid size={{ xs: 2, sm: 4, md: 4 }}>
           <StatCard
             title="Monthly Expenses"
             value={summary.expense}
@@ -229,11 +223,16 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      <Grid container spacing={3}>
+      <Grid
+        container
+        spacing={{ xs: 2, md: 3 }}
+        columns={{ xs: 2, sm: 8, md: 12 }}
+        // mb={3}
+      >
         {/* 3. Main Spending Chart */}
-        <Grid item xs={12} lg={8}>
+        <Grid size={{ xs: 2, sm: 4, md: 6 }}>
           <Card variant="outlined" sx={{ borderRadius: 5, p: 2 }}>
-            <Typography variant="h6" fontWeight="800" mb={3} px={2}>
+            <Typography variant="h6" fontWeight="600" mb={2} px={2}>
               Daily Spending Trend
             </Typography>
             <Box height={350}>
@@ -244,19 +243,16 @@ const Dashboard = () => {
                   sx={{ borderRadius: 4 }}
                 />
               ) : (
-                <TrendLine data={trendData} />
+                <TrendLine data={trendData} formatValue={formatValue} />
               )}
             </Box>
           </Card>
         </Grid>
 
         {/* 4. Category Pie Chart */}
-        <Grid item xs={12} lg={4}>
-          <Card
-            variant="outlined"
-            sx={{ borderRadius: 5, p: 2, height: "100%" }}
-          >
-            <Typography variant="h6" fontWeight="800" mb={3} px={2}>
+        <Grid size={{ xs: 2, sm: 4, md: 6 }}>
+          <Card variant="outlined" sx={{ borderRadius: 5, p: 2 }}>
+            <Typography variant="h6" fontWeight="600" mb={2} px={2}>
               By Category
             </Typography>
             <Box
@@ -265,21 +261,25 @@ const Dashboard = () => {
               alignItems="center"
               justifyContent="center"
             >
-              {loading ? <CircularProgress /> : <ExpensePie data={pieData} />}
+              {loading ? (
+                <CircularProgress />
+              ) : (
+                <ExpensePie data={pieData} formatValue={formatValue} />
+              )}
             </Box>
           </Card>
         </Grid>
 
         {/* 5. Savings & Smart Insights */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 2, sm: 4, md: 6 }}>
           <Card variant="outlined" sx={{ borderRadius: 5, p: 3 }}>
             <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography variant="subtitle1" fontWeight="800">
+              <Typography variant="subtitle1" fontWeight="600">
                 Monthly Savings Rate
               </Typography>
               <Typography
                 variant="h6"
-                fontWeight="900"
+                fontWeight="600"
                 color={savingsRate >= 0 ? "success.main" : "error.main"}
               >
                 {savingsRate}%
@@ -307,7 +307,7 @@ const Dashboard = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 2, sm: 4, md: 6 }}>
           <Card
             sx={{
               borderRadius: 5,
@@ -321,9 +321,9 @@ const Dashboard = () => {
             }}
           >
             <Box display="flex" alignItems="center" gap={2}>
-              <Typography variant="h3">{getInsightIcon()}</Typography>
+              <Typography variant="h4">{getInsightIcon()}</Typography>
               <Box>
-                <Typography variant="h6" fontWeight="800">
+                <Typography variant="h6" fontWeight="600">
                   Smart Insight
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
@@ -337,18 +337,22 @@ const Dashboard = () => {
         </Grid>
 
         {/* 6. Recent Activity */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 2, sm: 12 }}>
           <Box
             display="flex"
             justifyContent="space-between"
             alignItems="center"
-            mt={4}
+            // mt={2}
             mb={2}
           >
-            <Typography variant="h5" fontWeight="900">
+            <Typography variant="h6" fontWeight="600">
               Recent Transactions
             </Typography>
-            <Button size="small" sx={{ fontWeight: 800 }}>
+            <Button
+              onClick={() => navigate("/transactions")}
+              size="small"
+              sx={{ fontWeight: 600 }}
+            >
               View Statement
             </Button>
           </Box>
@@ -366,7 +370,7 @@ const Dashboard = () => {
           )}
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid size={{ xs: 2, sm: 12 }}>
           <Card variant="outlined" sx={{ borderRadius: 5, p: 3 }}>
             <Box
               display="flex"
@@ -375,7 +379,7 @@ const Dashboard = () => {
               mb={3}
             >
               <Box>
-                <Typography variant="h6" fontWeight="900">
+                <Typography variant="h5" fontWeight="600">
                   Net Worth Growth
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -383,7 +387,7 @@ const Dashboard = () => {
                 </Typography>
               </Box>
               <Box sx={{ textAlign: "right" }}>
-                <Typography variant="h5" fontWeight="900" color="primary.main">
+                <Typography variant="h5" fontWeight="600" color="primary.main">
                   +12.5%
                 </Typography>
                 <Typography
@@ -396,7 +400,7 @@ const Dashboard = () => {
               </Box>
             </Box>
 
-            <Box height={400}>
+            <Box height={200}>
               <BalanceTrend data={netWorthHistory} formatValue={formatValue} />
             </Box>
           </Card>

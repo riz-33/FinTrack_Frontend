@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import api from "../services/api";
 import {
   Grid,
@@ -39,9 +39,10 @@ import {
 import EmptyState from "../components/common/EmptyState";
 import { useNavigate } from "react-router-dom";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import { CurrencyContext } from "../context/ThemeContext";
 
 const Accounts = () => {
+  const { formatValue } = useContext(CurrencyContext);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -78,7 +79,6 @@ const Accounts = () => {
   const handleUpdateAccount = async () => {
     try {
       const res = await api.put(`/accounts/${selectedAccount._id}`, formData);
-      // Update local state so UI refreshes immediately
       setAccounts(
         accounts.map((a) => (a._id === selectedAccount._id ? res.data : a)),
       );
@@ -88,7 +88,7 @@ const Accounts = () => {
       showToast(
         error.response?.data?.message || "Failed to update account",
         "error",
-      ); // Error Toast
+      );
     }
   };
 
@@ -99,7 +99,6 @@ const Accounts = () => {
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
-    // setSelectedAccount(null);
   };
 
   const handleOpenDelete = () => {
@@ -180,36 +179,31 @@ const Accounts = () => {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: "auto" }}>
-      {/* 2. Enhanced Header Section */}
+    <Box sx={{ maxWidth: 1400, mx: "auto" }}>
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="center"
-        mb={6}
-        flexWrap="wrap"
-        gap={2}
+        mb={4}
       >
         <Box>
           <Typography
             variant="h4"
-            fontWeight="900"
+            fontWeight="700"
             sx={{ letterSpacing: "-0.5px" }}
           >
             Accounts
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body2" color="text.secondary">
             Manage your financial sources in one place.
           </Typography>
         </Box>
 
-        <Box display="flex" gap={2}>
-          {/* Total Net Worth Mini-Card */}
+        <Box sx={{ display: "flex", gap: 2 }}>
           <Card
             variant="outlined"
             sx={{
-              px: 3,
-              py: 1,
+              px: 4,
               borderRadius: 4,
               bgcolor: "background.paper",
               display: { xs: "none", sm: "block" },
@@ -223,8 +217,8 @@ const Accounts = () => {
             >
               Total Net Worth
             </Typography>
-            <Typography variant="h6" fontWeight="800" color="primary.main">
-              ${totalBalance.toLocaleString()}
+            <Typography variant="h6" fontWeight="600" color="primary.main">
+              {formatValue(totalBalance)}
             </Typography>
           </Card>
 
@@ -235,7 +229,7 @@ const Accounts = () => {
             startIcon={<PlusIcon className="h-5 w-5" />}
             sx={{
               borderRadius: 3,
-              px: 3,
+              px: 4,
               fontWeight: "bold",
               textTransform: "none",
             }}
@@ -253,11 +247,16 @@ const Accounts = () => {
           actionPath="/accounts/add"
         />
       ) : (
-        <Grid container spacing={3}>
+        <Grid
+          container
+          spacing={{ xs: 2, md: 2 }}
+          columns={{ xs: 4, sm: 8, md: 12 }}
+          mb={3}
+        >
           {accounts.map((acc) => {
             const styles = getAccountStyles(acc.type);
             return (
-              <Grid item xs={12} sm={6} md={4} key={acc._id}>
+              <Grid size={{ xs: 2, sm: 4, md: 3 }} key={acc._id}>
                 <Card
                   variant="outlined"
                   sx={{
@@ -277,7 +276,7 @@ const Accounts = () => {
                       display="flex"
                       justifyContent="space-between"
                       alignItems="center"
-                      mb={4}
+                      mb={1}
                     >
                       <Box
                         sx={{
@@ -306,7 +305,7 @@ const Accounts = () => {
                       {acc.name}
                     </Typography>
 
-                    <Box display="flex" alignItems="center" gap={1} mb={3}>
+                    <Box display="flex" alignItems="center" gap={1} mb={2}>
                       <Chip
                         label={acc.type}
                         size="small"
@@ -327,7 +326,7 @@ const Accounts = () => {
                       </Typography>
                     </Box>
 
-                    <Divider sx={{ my: 2, borderStyle: "dashed" }} />
+                    <Divider sx={{ my: 1, borderStyle: "dashed" }} />
 
                     <Box>
                       <Typography
@@ -338,25 +337,14 @@ const Accounts = () => {
                         CURRENT BALANCE
                       </Typography>
                       <Typography
-                        variant="h5"
-                        fontWeight="900"
+                        variant="h6"
+                        fontWeight="700"
                         sx={{
                           display: "flex",
-                          alignItems: "baseline",
                           gap: 0.5,
                         }}
                       >
-                        <Typography
-                          component="span"
-                          variant="subtitle1"
-                          fontWeight="700"
-                          color="text.secondary"
-                        >
-                          {acc.currency || "USD"}
-                        </Typography>
-                        {acc.balance?.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                        {formatValue(acc.balance)}
                       </Typography>
                     </Box>
                   </CardContent>

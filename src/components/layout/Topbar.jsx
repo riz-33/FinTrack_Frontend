@@ -13,25 +13,14 @@ import {
   XMarkIcon,
   SunIcon,
   MoonIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 import Logo from "../../assets/logo3.png";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { Avatar, IconButton, useTheme } from "@mui/material";
-import { ColorModeContext } from "../../context/ThemeContext";
-import { CurrencyContext } from "../../context/ThemeContext";
-
-const navigation = [
-  { name: "Dashboard", href: "/dashboard", current: true },
-  { name: "Accounts", href: "/accounts", current: false },
-  { name: "Transactions", href: "/transactions", current: false },
-  { name: "Budgets", href: "/budgets", current: false },
-];
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+import { ColorModeContext, CurrencyContext } from "../../context/ThemeContext";
 
 export default function Topbar() {
   const { logout, user } = useContext(AuthContext);
@@ -39,158 +28,120 @@ export default function Topbar() {
   const colorMode = useContext(ColorModeContext);
   const { currency, toggleCurrency } = useContext(CurrencyContext);
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = "/";
-  };
-
   const getInitials = (name) => {
-    const names = name.split(" ");
-    const initials = names.map((n) => n.charAt(0).toUpperCase());
-    return initials.slice(0, 2).join("");
+    return (
+      name
+        ?.split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase() || "U"
+    );
   };
 
   return (
     <Disclosure
       as="nav"
-      className="relative w-full bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 transition-colors duration-300"
+      className="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 sticky top-0 z-50 transition-colors"
     >
-      <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-        <div className="relative flex h-16 items-center justify-between">
-          <div className="absolute inset-y-0 left-0 flex items-center lg:hidden">
-            {/* Mobile menu button*/}
-            <DisclosureButton className="group relative inline-flex items-center justify-center rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:outline-none">
-              <span className="sr-only">Open main menu</span>
-              {/* <span className="absolute -inset-0.5" /> */}
-              {/* <span className="sr-only">Open main menu</span> */}
-              <Bars3Icon
-                aria-hidden="true"
-                className="block size-6 group-data-open:hidden"
-              />
-              <XMarkIcon
-                aria-hidden="true"
-                className="hidden size-6 group-data-open:block"
-              />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          {/* Mobile Menu Button (Left) */}
+          <div className="flex lg:hidden">
+            <DisclosureButton className="inline-flex items-center justify-center rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
+              <Bars3Icon className="block size-6 ui-open:hidden" />
+              <XMarkIcon className="hidden size-6 ui-open:block" />
             </DisclosureButton>
           </div>
-          <div
-            style={{ alignItems: "center" }}
-            className="flex flex-1 items-center justify-center sm:items-stretch lg:justify-start"
-          >
-            <div className="flex shrink-0 items-center cursor-pointer">
-              <a href="/dashboard">
-                <img
-                  alt="FinTrack Logo"
-                  src={Logo}
-                  className="h-12 w-40 transition-all duration-300 dark:brightness-200 dark:grayscale dark:invert"
-                />
-              </a>
-            </div>
-            <div className="hidden sm:ml-6 lg:block">
-              <div className="px-50 flex space-x-4">
-                {navigation.map((item) => (
-                  <NavLink
-                    key={item.name}
-                    to={item.href}
-                    // aria-current={item.current ? "page" : undefined}
-                    className={({ isActive }) =>
-                      `rounded-md px-3 py-2 text-sm font-medium transition-colors
-                           ${
-                             isActive
-                               ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-                               : "text-gray-600 hover:bg-gray-50 hover:text-blue-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-blue-400"
-                           }`
-                    }
-                  >
-                    {item.name}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
+
+          {/* Logo Section */}
+          <div className="flex items-center">
+            <Link to="/dashboard" className="flex-shrink-0">
+              <img
+                alt="FinTrack"
+                src={Logo}
+                className="h-10 w-auto dark:brightness-200 dark:invert"
+              />
+            </Link>
           </div>
 
-          <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            {/* Theme toggle button */}
-            <IconButton
-              onClick={colorMode.toggleColorMode}
-              color="inherit"
-              className="mr-2"
-            >
+          {/* Desktop Navigation (Center-Right) */}
+          <div className="hidden lg:flex lg:ml-8 lg:space-x-4 flex-1 justify-center">
+            {["Dashboard", "Accounts", "Transactions", "Budgets"].map(
+              (name) => (
+                <NavLink
+                  key={name}
+                  to={`/${name.toLowerCase()}`}
+                  className={({ isActive }) =>
+                    `px-3 py-2 text-sm font-medium rounded-lg transition-colors 
+                  ${isActive ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400" : "text-gray-500 hover:text-blue-600 dark:text-gray-400"}`
+                  }
+                >
+                  {name}
+                </NavLink>
+              ),
+            )}
+          </div>
+
+          {/* Right Action Icons */}
+          <div className="flex items-center gap-1 sm:gap-3">
+            {/* Theme Toggle */}
+            <IconButton onClick={colorMode.toggleColorMode} size="small">
               {theme.palette.mode === "dark" ? (
-                <SunIcon className="size-6 text-yellow-400" />
+                <SunIcon className="size-5 text-yellow-400" />
               ) : (
-                <MoonIcon className="size-6 text-gray-800" />
+                <MoonIcon className="size-5 text-gray-700" />
               )}
             </IconButton>
 
+            {/* Currency Toggle */}
             <button
               onClick={toggleCurrency}
-              className="mx-2 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-xs font-bold dark:text-white"
+              className="px-2 py-1 text-[10px] sm:text-xs font-bold border rounded dark:text-white dark:border-gray-600"
             >
               {currency}
             </button>
 
-            {/* Notification Button */}
-            <button className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400">
-              <BellIcon className="size-6" />
-            </button>
-
-            {/* Profile dropdown */}
-            <Menu as="div" className="relative ml-3">
-              <MenuButton className="cursor-pointer relative flex rounded-full border border-gray-200">
-                {/* <img
-                  alt="User"
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  className="size-8 rounded-full"
-                /> */}
-
+            {/* Profile Menu */}
+            <Menu as="div" className="relative ml-2">
+              <MenuButton className="flex rounded-full bg-blue-500 text-sm focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 <Avatar
                   sx={{
                     width: 32,
                     height: 32,
-                    bgcolor: "#3b82f6",
                     fontSize: 14,
+                    bgcolor: "transparent",
                   }}
                 >
-                  {getInitials(user?.name || "U")}
+                  {getInitials(user?.name)}
                 </Avatar>
-                <span className="sr-only">Open user menu</span>
               </MenuButton>
 
-              <MenuItems
-                transition
-                className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 transition focus:outline-none 
-             dark:bg-gray-800 dark:ring-white/10 dark:shadow-2xl"
-              >
+              <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black/5 focus:outline-none border dark:border-gray-700">
                 <MenuItem>
-                  {({ focus }) => (
-                    <a
-                      href="/profile"
-                      className={classNames(
-                        focus ? "bg-gray-100 dark:bg-gray-700" : "",
-                        "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200",
-                      )}
-                    >
-                      Your profile
-                    </a>
-                  )}
+                  <Link
+                    to="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    Your Profile
+                  </Link>
                 </MenuItem>
                 <MenuItem>
-                  <a
-                    href="/settings"
-                    className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden dark:text-gray-300 dark:data-focus:bg-white/5"
+                  <Link
+                    to="/settings"
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     Settings
-                  </a>
+                  </Link>
                 </MenuItem>
+                <div className="border-t dark:border-gray-700 my-1"></div>
                 <MenuItem>
-                  <a
-                    onClick={handleLogout}
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden dark:text-gray-300 dark:data-focus:bg-white/5"
+                  <button
+                    onClick={logout}
+                    className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     Sign out
-                  </a>
+                  </button>
                 </MenuItem>
               </MenuItems>
             </Menu>
@@ -198,24 +149,20 @@ export default function Topbar() {
         </div>
       </div>
 
-      <DisclosurePanel className="lg:hidden bg-white border-t dark:bg-gray-900 dark:border-gray-700">
-        <div className="space-y-1 px-2 pt-2 pb-3">
-          {navigation.map((item) => (
-            <DisclosureButton
-              key={item.name}
-              as="a"
-              href={item.href}
-              aria-current={item.current ? "page" : undefined}
-              className={classNames(
-                item.current
-                  ? "bg-blue-50 text-blue-600"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-blue-600",
-                "block rounded-md px-3 py-2 text-base font-medium",
-              )}
-            >
-              {item.name}
-            </DisclosureButton>
-          ))}
+      {/* Mobile Menu Panel */}
+      <DisclosurePanel className="lg:hidden border-t dark:border-gray-700 bg-white dark:bg-gray-900">
+        <div className="space-y-1 px-4 py-3">
+          {["Dashboard", "Accounts", "Transactions", "Budgets", "Settings"].map(
+            (name) => (
+              <NavLink
+                key={name}
+                to={`/${name.toLowerCase()}`}
+                className="block px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                {name}
+              </NavLink>
+            ),
+          )}
         </div>
       </DisclosurePanel>
     </Disclosure>

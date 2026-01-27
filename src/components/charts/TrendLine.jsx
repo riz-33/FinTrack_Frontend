@@ -9,7 +9,7 @@ import {
 } from "recharts";
 import { useTheme, Box, Typography } from "@mui/material";
 
-const TrendLine = ({ data }) => {
+const TrendLine = ({ data, formatValue }) => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === "dark";
   const currentMonth = new Date().toLocaleString("default", { month: "short" });
