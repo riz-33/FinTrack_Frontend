@@ -41,7 +41,13 @@ const RecentTransactions = ({ transactions, formatValue }) => {
                   <Chip
                     label={row.type}
                     size="small"
-                    color={row.type === "income" ? "success" : "error"}
+                    color={
+                      row.type === "income"
+                        ? "success"
+                        : row.type === "transfer"
+                          ? "info"
+                          : "error"
+                    }
                     sx={{ textTransform: "capitalize", fontWeight: "bold" }}
                   />
                 </TableCell>
@@ -50,7 +56,11 @@ const RecentTransactions = ({ transactions, formatValue }) => {
                   sx={{
                     fontWeight: "700",
                     color:
-                      row.type === "income" ? "success.main" : "error.main",
+                      row.type === "income"
+                        ? "success.main"
+                        : row.type === "transfer"
+                          ? "info.main"
+                          : "error.main",
                   }}
                 >
                   {row.type === "income" ? "+" : "-"} {formatValue(row.amount)}

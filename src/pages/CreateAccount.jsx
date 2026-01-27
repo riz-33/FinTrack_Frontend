@@ -30,25 +30,25 @@ const accountTypes = [
     value: "bank",
     label: "Bank Account",
     icon: <BuildingLibraryIcon className="h-5 w-5" />,
-    color: "#3b82f6",
+    color: "#2563eb",
   },
   {
     value: "savings",
     label: "Savings/Investment",
     icon: <BanknotesIcon className="h-5 w-5" />,
-    color: "#10b981",
+    color: "#7c3aed",
   },
   {
     value: "cash",
     label: "Cash/Wallet",
     icon: <WalletIcon className="h-5 w-5" />,
-    color: "#f59e0b",
+    color: "#059669",
   },
   {
     value: "credit",
     label: "Credit Card",
     icon: <CreditCardIcon className="h-5 w-5" />,
-    color: "#ef4444",
+    color: "#dc2626",
   },
 ];
 
@@ -103,12 +103,12 @@ const CreateAccount = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 550, mx: "auto", py: 4 }}>
+    <Box sx={{ maxWidth: 550, mx: "auto", py: 2 }}>
       <Button
         startIcon={<ArrowLeftIcon className="h-4 w-4" />}
         onClick={() => navigate("/accounts")}
         sx={{
-          mb: 2,
+          // mb: 2,
           textTransform: "none",
           color: "text.secondary",
           fontWeight: 600,
@@ -148,9 +148,10 @@ const CreateAccount = () => {
           </Box>
 
           <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
+            <Grid container spacing={{ xs: 2, md: 2 }} rowSpacing={3}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
+                  size="small"
                   fullWidth
                   label="Account Name"
                   placeholder="e.g. Chase Checkings"
@@ -162,9 +163,9 @@ const CreateAccount = () => {
                   sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                 />
               </Grid>
-
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
+                  size="small"
                   select
                   fullWidth
                   label="Account Type"
@@ -188,9 +189,9 @@ const CreateAccount = () => {
                   ))}
                 </TextField>
               </Grid>
-
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
+                  size="small"
                   select
                   fullWidth
                   label="Currency"
@@ -207,9 +208,9 @@ const CreateAccount = () => {
                   ))}
                 </TextField>
               </Grid>
-
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
+                  size="small"
                   fullWidth
                   label="Initial Balance"
                   type="number"
@@ -228,8 +229,8 @@ const CreateAccount = () => {
                     ),
                     sx: {
                       borderRadius: 3,
-                      fontSize: "1.2rem",
-                      fontWeight: "bold",
+                      // fontSize: "1.2rem",
+                      // fontWeight: "bold",
                     },
                   }}
                   value={formData.balance}
@@ -238,18 +239,15 @@ const CreateAccount = () => {
                   }
                 />
               </Grid>
-
               <Grid item xs={12}>
                 <Box display="flex" gap={2} mt={1}>
                   <Button
                     type="submit"
                     variant="contained"
-                    fullWidth
                     disableElevation
                     disabled={loading}
                     sx={{
                       borderRadius: 3,
-                      py: 1.5,
                       fontWeight: "bold",
                       textTransform: "none",
                     }}
@@ -265,7 +263,6 @@ const CreateAccount = () => {
                     onClick={() => navigate("/accounts")}
                     sx={{
                       borderRadius: 3,
-                      px: 4,
                       textTransform: "none",
                       fontWeight: "bold",
                     }}

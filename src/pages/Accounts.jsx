@@ -231,7 +231,7 @@ const Accounts = () => {
               borderRadius: 3,
               px: 4,
               fontWeight: "bold",
-              textTransform: "none",
+              // textTransform: "none",
             }}
           >
             Add Account

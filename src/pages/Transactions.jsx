@@ -381,144 +381,410 @@ const Transactions = () => {
             message="Your financial activities will appear here."
           />
         ) : (
-          <Box sx={{ overflowX: "auto" }}>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">
-                    Date
-                  </th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">
-                    Details
-                  </th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">
-                    Category
-                  </th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">
-                    Amount
-                  </th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredData.map((t) => {
-                  // Dynamic symbol logic
-                  const symbol = currencySymbols[t.accountId?.currency] || "$";
+          // <Box sx={{ overflowX: "auto" }}>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50/50 border-b border-gray-100">
+                <th className="px-6 py-4 text-xs font-bold uppercase">Date</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase">
+                  Details
+                </th>
+                <th className="px-6 py-4 text-xs font-bold uppercase">
+                  Category
+                </th>
+                <th className="px-6 py-4 text-xs font-bold uppercase">Type</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase text-right">
+                  Amount
+                </th>
+                <th className="px-6 py-4 text-xs font-bold uppercase text-right">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredData.map((t) => {
+                // Dynamic symbol logic
+                const symbol = currencySymbols[t.accountId?.currency] || "$";
 
-                  return (
-                    <tr
-                      key={t._id}
-                      className="hover:bg-blue-50/30 transition-colors group"
-                    >
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {new Date(t.date).toLocaleDateString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </td>
-                      <td className="px-6 py-4">
-                        <Typography
-                          variant="body2"
-                          fontWeight="700"
-                          color="text.primary"
-                        >
-                          {t.description}
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          {t.accountId?.name ||
-                            (t.type === "transfer"
-                              ? "Internal Transfer"
-                              : "N/A")}
-                        </Typography>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Chip
-                          label={t.category}
-                          size="small"
-                          sx={{
-                            fontWeight: "bold",
-                            fontSize: "0.7rem",
-                            borderRadius: 1.5,
-                            bgcolor: "white",
-                            border: "1px solid",
-                            borderColor: "divider",
-                          }}
-                        />
-                      </td>
-                      <td className={`px-6 py-4 text-right font-bold text-sm`}>
-                        <Box
-                          sx={{
-                            color:
-                              t.type === "income"
-                                ? "success.main"
-                                : t.type === "transfer"
-                                  ? "info.main"
-                                  : "error.main",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "flex-end",
-                          }}
-                        >
-                          <span>
-                            {t.type === "income"
-                              ? "+"
+                return (
+                  <tr
+                    key={t._id}
+                    className="hover:bg-blue-50/30 transition-colors group"
+                  >
+                    <td className="px-6 py-4 text-sm ">
+                      {new Date(t.date).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Typography
+                        variant="body2"
+                        fontWeight="700"
+                        color="text.primary"
+                      >
+                        {t.description}
+                      </Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        {t.accountId?.name ||
+                          (t.type === "transfer" ? "Internal Transfer" : "N/A")}
+                      </Typography>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Chip
+                        label={t.category}
+                        size="small"
+                        variant="outlined"
+                      />
+                    </td>
+                    <td className="px-2 py-4">
+                      <Chip
+                        label={t.type}
+                        size="small"
+                        color={
+                          t.type === "income"
+                            ? "success"
+                            : t.type === "transfer"
+                              ? "info"
+                              : "error"
+                        }
+                        sx={{ textTransform: "capitalize", fontWeight: "bold" }}
+                      />
+                    </td>
+                    <td className={`px-6 py-4 text-right font-bold text-sm`}>
+                      <Box
+                        sx={{
+                          color:
+                            t.type === "income"
+                              ? "success.main"
                               : t.type === "transfer"
-                                ? ""
-                                : "-"}{" "}
-                            {symbol}
-                            {t.amount.toLocaleString()}
-                          </span>
-                          <Typography
-                            variant="caption"
-                            sx={{ opacity: 0.7, textTransform: "capitalize" }}
-                          >
-                            {t.type}
-                          </Typography>
-                        </Box>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            gap: 0.5,
-                            opacity: 0,
-                            ".group:hover &": { opacity: 1 },
-                            transition: "opacity 0.2s",
+                                ? "info.main"
+                                : "error.main",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-end",
+                        }}
+                      >
+                        <span>
+                          {t.type === "income"
+                            ? "+"
+                            : t.type === "transfer"
+                              ? ""
+                              : "-"}{" "}
+                          {symbol}
+                          {t.amount.toLocaleString()}
+                        </span>
+                        <Typography
+                          variant="caption"
+                          sx={{ opacity: 0.7, textTransform: "capitalize" }}
+                        >
+                          {t.type}
+                        </Typography>
+                      </Box>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          gap: 0.5,
+                          ".group:hover &": { opacity: 1 },
+                          transition: "opacity 0.2s",
+                        }}
+                      >
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => handleEditClick(t)}
+                        >
+                          <PencilSquareIcon className="h-4 w-4" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => {
+                            setSelectedId(t._id);
+                            setOpenConfirm(true);
                           }}
                         >
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => handleEditClick(t)}
-                          >
-                            <PencilSquareIcon className="h-4 w-4" />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => {
-                              setSelectedId(t._id);
-                              setOpenConfirm(true);
-                            }}
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </IconButton>
-                        </Box>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </Box>
+                          <TrashIcon className="h-4 w-4" />
+                        </IconButton>
+                      </Box>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
       </Card>
 
-      {/* ... (Keep your Dialogs and Snackbar as they are) */}
+      {/* Confirmation Popup */}
+
+      <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+        <DialogTitle>Delete Transaction?</DialogTitle>
+
+        <DialogContent>
+          Are you sure you want to delete? This action cannot be undone and will
+          remove transaction history.
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setOpenConfirm(false)}>Cancel</Button>
+
+          <Button onClick={handleDelete} variant="contained" color="error">
+            {loading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Confirm Delete"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogTitle
+          sx={{
+            fontWeight: "bold",
+
+            background: "linear-gradient(45deg, #1976d2, #42a5f5)",
+
+            color: "white",
+
+            mb: 2,
+          }}
+        >
+          Edit Transaction
+        </DialogTitle>
+
+        <form onSubmit={handleUpdate}>
+          <DialogContent dividers>
+            <Grid container spacing={2}>
+              <Grid size={12} item xs={12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Description"
+                  value={editFormData?.description || ""}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+
+                      description: e.target.value,
+                    })
+                  }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                />
+              </Grid>
+
+              {editFormData.type === "transfer" ? (
+                <>
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      label="From Account"
+                      // required
+
+                      value={editFormData.fromAccountId}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+
+                          fromAccountId: e.target.value,
+                        })
+                      }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                    >
+                      {accounts.map((acc) => (
+                        <MenuItem key={acc._id} value={acc._id}>
+                          {acc.name} ({currencySymbols[acc.currency] || ""}
+                          {acc.balance.toLocaleString()})
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      size="small"
+                      fullWidth
+                      label="To Account"
+                      // required
+
+                      value={editFormData.toAccountId}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+
+                          toAccountId: e.target.value,
+                        })
+                      }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                    >
+                      {/* Tip: Filter out the 'From' account so they don't transfer to the same account */}
+
+                      {accounts
+
+                        .filter((acc) => acc._id !== editFormData.fromAccountId)
+
+                        .map((acc) => (
+                          <MenuItem key={acc._id} value={acc._id}>
+                            {acc.name} ({currencySymbols[acc.currency] || ""}
+                            {acc.balance.toLocaleString()})
+                          </MenuItem>
+                        ))}
+                    </TextField>
+                  </Grid>
+                </>
+              ) : (
+                <>
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      size="small"
+                      fullWidth
+                      label="Select Account"
+                      // required
+
+                      value={editFormData.accountId}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+
+                          accountId: e.target.value,
+                        })
+                      }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                    >
+                      {accounts.map((acc) => (
+                        <MenuItem key={acc._id} value={acc._id}>
+                          {acc.name} ({currencySymbols[acc.currency] || ""}
+                          {acc.balance.toLocaleString()})
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+
+                  <Grid size={6} item xs={12} md={6}>
+                    <TextField
+                      select
+                      size="small"
+                      fullWidth
+                      label="Category"
+                      // required
+
+                      value={editFormData.category}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+
+                          category: e.target.value,
+                        })
+                      }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                    >
+                      {(editFormData.type === "income"
+                        ? categoriesIncome
+                        : categoriesExpense
+                      ).map((cat) => (
+                        <MenuItem key={cat} value={cat}>
+                          {cat}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                </>
+              )}
+
+              <Grid size={6} item xs={12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="number"
+                  label="Amount"
+                  value={editFormData?.amount || ""}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Typography
+                          sx={{ fontWeight: "bold", color: "text.primary" }}
+                        >
+                          {currentSymbol}
+                        </Typography>
+                      </InputAdornment>
+                    ),
+                  }}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+
+                      amount: e.target.value,
+                    })
+                  }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                />
+              </Grid>
+
+              <Grid size={6} item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="date"
+                  label="Transaction Date"
+                  InputLabelProps={{ shrink: true }}
+                  value={editFormData.date}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, date: e.target.value })
+                  }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setEditModalOpen(false)}>Cancel</Button>
+
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={isUpdating} // Add this
+            >
+              {isUpdating ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Update Changes"
+              )}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
