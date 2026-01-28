@@ -154,16 +154,17 @@ const Dashboard = () => {
   );
 
   return (
-    <Box
-      sx={{ flexGrow: 1, maxWidth: 1400, margin: "auto" }}
-    >
+    <Box sx={{ flexGrow: 1, maxWidth: 1400, margin: "auto" }}>
       {/* 1. Header with Month Selector */}
       <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-        gap={2}
+      sx={{
+        display: "flex",
+        // display: { xs: "grid", sm: "flex" },
+        justifyContent: "space-between",
+        alignItems: "center",
+        mb: 2,
+        gap: 2,
+      }}
       >
         <Box>
           <Typography
@@ -242,8 +243,13 @@ const Dashboard = () => {
                   height="100%"
                   sx={{ borderRadius: 4 }}
                 />
-              ) : (
+              ) : trendData.length > 0 ? (
                 <TrendLine data={trendData} formatValue={formatValue} />
+              ) : (
+                <EmptyState
+                  title="No Expenses Yet"
+                  message="We couldn't find any expenses for this month. Start tracking to see the breakdown!"
+                />
               )}
             </Box>
           </Card>
@@ -257,14 +263,23 @@ const Dashboard = () => {
             </Typography>
             <Box
               height={350}
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
+              // display="flex"
+              // alignItems="center"
+              // justifyContent="center"
             >
               {loading ? (
-                <CircularProgress />
-              ) : (
+                <Skeleton
+                  variant="rectangular"
+                  height="100%"
+                  sx={{ borderRadius: 4 }}
+                />
+              ) : pieData.length > 0 ? (
                 <ExpensePie data={pieData} formatValue={formatValue} />
+              ) : (
+                <EmptyState
+                  title="No Expenses Yet"
+                  message="We couldn't find any expenses for this month. Start tracking to see the breakdown!"
+                />
               )}
             </Box>
           </Card>

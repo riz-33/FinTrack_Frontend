@@ -1,11 +1,20 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import api from "../services/api";
 import Logo from "../assets/logo4.png";
 import { Link, useNavigate } from "react-router-dom";
-import { Alert, Snackbar, CircularProgress, IconButton, InputAdornment } from "@mui/material";
+import {
+  Alert,
+  Snackbar,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+} from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Register() {
+  const { login } = useContext(AuthContext);
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -42,14 +51,19 @@ export default function Register() {
 
     try {
       const res = await api.post("/auth/register", formData);
-      showToast("Account created successfully! Welcome to FinTrack.", "success");
-      
-      // We wait slightly so they can read the success message
+      login(res.data);
+      showToast(
+        "Account created successfully! Welcome to FinTrack.",
+        "success",
+      );
       setTimeout(() => {
-        navigate("/"); // Redirect to login to verify credentials
+        navigate("/dashboard");
       }, 1500);
     } catch (err) {
-      showToast(err.response?.data?.message || "Registration failed. Please try again.", "error");
+      showToast(
+        err.response?.data?.message || "Registration failed. Please try again.",
+        "error",
+      );
     } finally {
       setLoading(false);
     }
@@ -67,7 +81,7 @@ export default function Register() {
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           variant="filled"
-          sx={{ width: "100%", borderRadius: 2, fontWeight: '600' }}
+          sx={{ width: "100%", borderRadius: 2, fontWeight: "600" }}
         >
           {snackbar.message}
         </Alert>
@@ -75,7 +89,11 @@ export default function Register() {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <div className="flex justify-center">
-           <img alt="FinTrack Logo" src={Logo} className="h-32 w-auto object-contain" />
+          <img
+            alt="FinTrack Logo"
+            src={Logo}
+            className="h-32 w-auto object-contain"
+          />
         </div>
         <h2 className="mt-4 text-center text-3xl font-extrabold tracking-tight text-white">
           Create Account
@@ -150,7 +168,11 @@ export default function Register() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white"
                 >
-                  {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                  {showPassword ? (
+                    <VisibilityOff fontSize="small" />
+                  ) : (
+                    <Visibility fontSize="small" />
+                  )}
                 </button>
               </div>
             </div>

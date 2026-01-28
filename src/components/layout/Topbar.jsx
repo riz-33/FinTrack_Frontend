@@ -151,19 +151,32 @@ export default function Topbar() {
 
       {/* Mobile Menu Panel */}
       <DisclosurePanel className="lg:hidden border-t dark:border-gray-700 bg-white dark:bg-gray-900">
-        <div className="space-y-1 px-4 py-3">
-          {["Dashboard", "Accounts", "Transactions", "Budgets", "Settings"].map(
-            (name) => (
+        {({ close }) => (
+          <div className="space-y-1 px-4 py-3">
+            {[
+              "Dashboard",
+              "Accounts",
+              "Transactions",
+              "Budgets",
+              // "Settings",
+            ].map((name) => (
               <NavLink
                 key={name}
                 to={`/${name.toLowerCase()}`}
-                className="block px-3 py-2 text-base font-medium text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
+                onClick={() => close()}
+                className={({ isActive }) =>
+                  `block px-3 py-2 text-base font-medium rounded-md transition-colors ${
+                    isActive
+                      ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  }`
+                }
               >
                 {name}
               </NavLink>
-            ),
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </DisclosurePanel>
     </Disclosure>
   );
