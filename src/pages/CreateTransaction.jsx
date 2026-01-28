@@ -141,13 +141,13 @@ const CreateTransaction = () => {
         startIcon={<ArrowLeftIcon className="h-4 w-4" />}
         onClick={() => navigate("/transactions")}
         sx={{
-          mb: 3,
+          mb: 2,
           textTransform: "none",
           color: "text.secondary",
           fontWeight: 600,
         }}
       >
-        Back
+        Back to Transactions
       </Button>
 
       <Card
@@ -159,17 +159,17 @@ const CreateTransaction = () => {
         }}
       >
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h5" fontWeight="800" mb={1}>
+          <Typography variant="h5" fontWeight="800">
             Create{" "}
             {formData.type.charAt(0).toUpperCase() + formData.type.slice(1)}
           </Typography>
-          <Typography variant="body2" color="text.secondary" mb={4}>
+          <Typography variant="body2" color="text.secondary" mb={2}>
             Fill in the details below to record your transaction.
           </Typography>
 
           <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
+            <Grid container spacing={{ xs: 2, md: 2 }} rowSpacing={3}>
+              <Grid size={{ xs: 12 }}>
                 <ToggleButtonGroup
                   value={formData.type}
                   exclusive
@@ -177,17 +177,18 @@ const CreateTransaction = () => {
                   fullWidth
                   sx={{
                     bgcolor: "grey.50",
-                    p: 0.5,
+                    // p: 0.5,
                     borderRadius: 4,
                     "& .MuiToggleButton-root": {
                       border: "none",
+                      color: "lightgrey",
                       borderRadius: 3,
                       fontWeight: "bold",
                       textTransform: "none",
-                      py: 1.5,
+                      // py: 1.5,
                       "&.Mui-selected": {
                         boxShadow: "0px 4px 10px rgba(0,0,0,0.1)",
-                        bgcolor: "white",
+                        // bgcolor: "white",
                         color: getThemeColor(),
                       },
                     },
@@ -208,8 +209,9 @@ const CreateTransaction = () => {
                 </ToggleButtonGroup>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
+                  size="small"
                   fullWidth
                   label="Description"
                   required
@@ -217,14 +219,15 @@ const CreateTransaction = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  InputProps={{ sx: { borderRadius: 3 } }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                 />
               </Grid>
 
               {formData.type === "transfer" ? (
                 <>
-                  <Grid item xs={12} md={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
+                      size="small"
                       select
                       fullWidth
                       label="From Account"
@@ -236,6 +239,7 @@ const CreateTransaction = () => {
                           fromAccountId: e.target.value,
                         })
                       }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                     >
                       {accounts.map((acc) => (
                         <MenuItem key={acc._id} value={acc._id}>
@@ -245,8 +249,9 @@ const CreateTransaction = () => {
                       ))}
                     </TextField>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
+                      size="small"
                       select
                       fullWidth
                       label="To Account"
@@ -258,6 +263,7 @@ const CreateTransaction = () => {
                           toAccountId: e.target.value,
                         })
                       }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                     >
                       {accounts
                         .filter((a) => a._id !== formData.fromAccountId)
@@ -271,8 +277,9 @@ const CreateTransaction = () => {
                 </>
               ) : (
                 <>
-                  <Grid item xs={12} md={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
+                      size="small"
                       select
                       fullWidth
                       label="Account"
@@ -281,6 +288,7 @@ const CreateTransaction = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, accountId: e.target.value })
                       }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                     >
                       {accounts.map((acc) => (
                         <MenuItem key={acc._id} value={acc._id}>
@@ -289,8 +297,9 @@ const CreateTransaction = () => {
                       ))}
                     </TextField>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
+                      size="small"
                       select
                       fullWidth
                       label="Category"
@@ -299,6 +308,7 @@ const CreateTransaction = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, category: e.target.value })
                       }
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                     >
                       {(formData.type === "income"
                         ? categoriesIncome
@@ -313,8 +323,9 @@ const CreateTransaction = () => {
                 </>
               )}
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
+                  size="small"
                   fullWidth
                   type="number"
                   label="Amount"
@@ -333,17 +344,18 @@ const CreateTransaction = () => {
                         {currentSymbol}
                       </InputAdornment>
                     ),
-                    sx: { borderRadius: 3 },
                   }}
                   value={formData.amount}
                   onChange={(e) =>
                     setFormData({ ...formData, amount: e.target.value })
                   }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
+                  size="small"
                   fullWidth
                   type="date"
                   label="Date"
@@ -352,38 +364,34 @@ const CreateTransaction = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, date: e.target.value })
                   }
-                  InputProps={{ sx: { borderRadius: 3 } }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                 />
               </Grid>
 
-              <Grid item xs={12}>
-                <Box display="flex" gap={2} mt={2}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    fullWidth
-                    disableElevation
-                    disabled={loading || isOverLimit}
-                    sx={{
-                      borderRadius: 3,
-                      py: 1.5,
-                      fontWeight: "bold",
-                      textTransform: "none",
-                      bgcolor: getThemeColor(),
-                      "&:hover": {
-                        bgcolor: getThemeColor(),
-                        filter: "brightness(0.9)",
-                      },
-                    }}
-                  >
-                    {loading ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      "Complete Transaction"
-                    )}
-                  </Button>
-                </Box>
-              </Grid>
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                disableElevation
+                disabled={loading || isOverLimit}
+                sx={{
+                  borderRadius: 3,
+                  // py: 1.5,
+                  fontWeight: "bold",
+                  textTransform: "none",
+                  bgcolor: getThemeColor(),
+                  "&:hover": {
+                    bgcolor: getThemeColor(),
+                    filter: "brightness(0.9)",
+                  },
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Complete Transaction"
+                )}
+              </Button>
             </Grid>
           </form>
         </CardContent>

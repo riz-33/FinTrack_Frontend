@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -20,6 +21,7 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  TablePagination,
 } from "@mui/material";
 import {
   PlusIcon,
@@ -250,20 +252,32 @@ const Transactions = () => {
     document.body.removeChild(a);
   };
 
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+
   return (
-    <Box sx={{ pb: 4 }}>
+    <Box sx={{ maxWidth: 1400, mx: "auto" }}>
       {/* Header Section */}
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="flex-start"
-        mb={4}
+        mb={2}
       >
         <Box>
-          <Typography variant="h4" fontWeight="800" color="text.primary">
+          <Typography variant="h4" fontWeight="700" color="text.primary">
             Transactions
           </Typography>
-          <Typography variant="body1" color="textSecondary">
+          <Typography variant="body2" color="textSecondary">
             Manage and track your financial history
           </Typography>
         </Box>
@@ -302,7 +316,7 @@ const Transactions = () => {
       <Card
         variant="outlined"
         sx={{
-          mb: 3,
+          mb: 2,
           p: 2,
           borderRadius: 4,
           border: "1px solid",
@@ -371,152 +385,181 @@ const Transactions = () => {
           borderColor: "divider",
         }}
       >
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", p: 8 }}>
-            <CircularProgress />
-          </Box>
-        ) : filteredData.length === 0 ? (
+        {filteredData.length === 0 && !loading ? (
           <EmptyState
-            title={searchTerm ? "No matches found" : "No transactions"}
-            message="Your financial activities will appear here."
+            title={searchTerm ? "No matches found" : "No transactions yet"}
+            message={
+              searchTerm
+                ? "Try adjusting your search terms."
+                : "Start logging your spending."
+            }
+            actionLabel={searchTerm ? null : "Add Transaction"}
+            actionPath={searchTerm ? null : "/transactions/add"}
           />
         ) : (
-          // <Box sx={{ overflowX: "auto" }}>
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="px-6 py-4 text-xs font-bold uppercase">Date</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase">
-                  Details
-                </th>
-                <th className="px-6 py-4 text-xs font-bold uppercase">
-                  Category
-                </th>
-                <th className="px-6 py-4 text-xs font-bold uppercase">Type</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase text-right">
-                  Amount
-                </th>
-                <th className="px-6 py-4 text-xs font-bold uppercase text-right">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredData.map((t) => {
-                // Dynamic symbol logic
-                const symbol = currencySymbols[t.accountId?.currency] || "$";
-
-                return (
-                  <tr
-                    key={t._id}
-                    className="hover:bg-blue-50/30 transition-colors group"
-                  >
-                    <td className="px-6 py-4 text-sm ">
-                      {new Date(t.date).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="px-6 py-4">
-                      <Typography
-                        variant="body2"
-                        fontWeight="700"
-                        color="text.primary"
+          <Box sx={{ overflowX: "auto" }}>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50/50 border-b border-gray-100">
+                  <th className="px-6 py-4 text-xs font-bold uppercase">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase">
+                    Details
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase">
+                    Category
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase">
+                    Type
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-right">
+                    Amount
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-right">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredData
+                  /* PAGINATION SLICE: This is the key part */
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((t) => {
+                    const symbol =
+                      currencySymbols[t.accountId?.currency] || "$";
+                    return (
+                      <tr
+                        key={t._id}
+                        className="hover:bg-blue-50/30 transition-colors group"
                       >
-                        {t.description}
-                      </Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        {t.accountId?.name ||
-                          (t.type === "transfer" ? "Internal Transfer" : "N/A")}
-                      </Typography>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Chip
-                        label={t.category}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </td>
-                    <td className="px-2 py-4">
-                      <Chip
-                        label={t.type}
-                        size="small"
-                        color={
-                          t.type === "income"
-                            ? "success"
-                            : t.type === "transfer"
-                              ? "info"
-                              : "error"
-                        }
-                        sx={{ textTransform: "capitalize", fontWeight: "bold" }}
-                      />
-                    </td>
-                    <td className={`px-6 py-4 text-right font-bold text-sm`}>
-                      <Box
-                        sx={{
-                          color:
-                            t.type === "income"
-                              ? "success.main"
-                              : t.type === "transfer"
-                                ? "info.main"
-                                : "error.main",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "flex-end",
-                        }}
-                      >
-                        <span>
-                          {t.type === "income"
-                            ? "+"
-                            : t.type === "transfer"
-                              ? ""
-                              : "-"}{" "}
-                          {symbol}
-                          {t.amount.toLocaleString()}
-                        </span>
-                        <Typography
-                          variant="caption"
-                          sx={{ opacity: 0.7, textTransform: "capitalize" }}
+                        <td className="px-6 py-4 text-sm ">
+                          {new Date(t.date).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </td>
+                        <td className="px-6 py-4">
+                          <Typography
+                            variant="body2"
+                            fontWeight="700"
+                            color="text.primary"
+                          >
+                            {t.description}
+                          </Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            {t.accountId?.name ||
+                              (t.type === "transfer"
+                                ? "Internal Transfer"
+                                : "N/A")}
+                          </Typography>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Chip
+                            label={t.category}
+                            size="small"
+                            variant="outlined"
+                          />
+                        </td>
+                        <td className="px-2 py-4">
+                          <Chip
+                            label={t.type}
+                            size="small"
+                            color={
+                              t.type === "income"
+                                ? "success"
+                                : t.type === "transfer"
+                                  ? "info"
+                                  : "error"
+                            }
+                            sx={{
+                              textTransform: "capitalize",
+                              fontWeight: "bold",
+                            }}
+                          />
+                        </td>
+                        <td
+                          className={`px-6 py-4 text-right font-bold text-sm`}
                         >
-                          {t.type}
-                        </Typography>
-                      </Box>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          gap: 0.5,
-                          ".group:hover &": { opacity: 1 },
-                          transition: "opacity 0.2s",
-                        }}
-                      >
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => handleEditClick(t)}
-                        >
-                          <PencilSquareIcon className="h-4 w-4" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => {
-                            setSelectedId(t._id);
-                            setOpenConfirm(true);
-                          }}
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Box>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          <Box
+                            sx={{
+                              color:
+                                t.type === "income"
+                                  ? "success.main"
+                                  : t.type === "transfer"
+                                    ? "info.main"
+                                    : "error.main",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "flex-end",
+                            }}
+                          >
+                            <span>
+                              {t.type === "income"
+                                ? "+"
+                                : t.type === "transfer"
+                                  ? ""
+                                  : "-"}{" "}
+                              {symbol}
+                              {t.amount.toLocaleString()}
+                            </span>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                opacity: 0.7,
+                                textTransform: "capitalize",
+                              }}
+                            >
+                              {t.type}
+                            </Typography>
+                          </Box>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              gap: 0.5,
+                              ".group:hover &": { opacity: 1 },
+                              transition: "opacity 0.2s",
+                            }}
+                          >
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => handleEditClick(t)}
+                            >
+                              <PencilSquareIcon className="h-4 w-4" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => {
+                                setSelectedId(t._id);
+                                setOpenConfirm(true);
+                              }}
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </IconButton>
+                          </Box>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+            {/* Fixed Pagination Component */}
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={filteredData.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Box>
         )}
       </Card>
 
@@ -526,8 +569,8 @@ const Transactions = () => {
         <DialogTitle>Delete Transaction?</DialogTitle>
 
         <DialogContent>
-          Are you sure you want to delete? This action cannot be undone and will
-          remove transaction history.
+          Are you sure you want to delete this transaction? This action cannot
+          be undone and will remove transaction history.
         </DialogContent>
 
         <DialogActions sx={{ p: 2 }}>

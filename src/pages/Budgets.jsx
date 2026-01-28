@@ -114,24 +114,30 @@ const Budgets = () => {
   };
 
   return (
-    <Box sx={{ pb: 4 }}>
+    <Box sx={{ mx: "auto" }}>
       {/* Header & Controls */}
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="flex-start"
-        mb={5}
+        mb={4}
       >
         <Box>
           <Typography
             variant="h4"
-            fontWeight="800"
+            fontWeight="700"
             sx={{ letterSpacing: "-0.5px" }}
           >
             Financial Goals
           </Typography>
-          <Typography variant="body1" color="textSecondary">
-            Review your spending limits for <strong>{selectedMonth}</strong>
+          <Typography variant="body2" color="textSecondary">
+            Review your spending limits for{" "}
+            <strong>
+              {new Date(selectedMonth + "-01").toLocaleString("default", {
+                month: "long",
+                year: "numeric",
+              })}
+            </strong>
           </Typography>
         </Box>
 
@@ -143,7 +149,7 @@ const Budgets = () => {
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
             sx={{
-              bgcolor: "white",
+              // bgcolor: "white",
               borderRadius: 2,
               "& .MuiOutlinedInput-root": { borderRadius: 2 },
             }}
@@ -181,7 +187,12 @@ const Budgets = () => {
           actionPath="/budgets/add"
         />
       ) : (
-        <Grid container spacing={3}>
+        <Grid
+          container
+          spacing={{ xs: 2, md: 2 }}
+          columns={{ xs: 4, sm: 8, md: 12 }}
+          mb={3}
+        >
           {budgets.map((budget) => {
             const percentage = Math.min(
               (budget.spent / budget.limit) * 100,
@@ -191,7 +202,7 @@ const Budgets = () => {
             const remaining = budget.limit - budget.spent;
 
             return (
-              <Grid size={6} item xs={12} md={6} key={budget.category}>
+              <Grid size={{ xs: 2, sm: 6 }} key={budget.category}>
                 <Card
                   elevation={0}
                   sx={{
@@ -261,7 +272,7 @@ const Budgets = () => {
                               },
                             }}
                           >
-                            <TrashIcon className="h-4 w-4" />
+                            <TrashIcon className="h-5 w-5" />
                           </IconButton>
                         </Tooltip>
                       </Box>
@@ -273,7 +284,7 @@ const Budgets = () => {
                       alignItems="flex-end"
                       mb={1}
                     >
-                      <Typography variant="h5" fontWeight="800">
+                      <Typography variant="h6" fontWeight="800">
                         ${budget.spent.toLocaleString()}
                         <Typography
                           component="span"

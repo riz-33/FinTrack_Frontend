@@ -37,11 +37,11 @@ const Settings = () => {
       elevation={0}
       className="p-6 mb-6 rounded-3xl border border-gray-100 dark:border-gray-800 dark:bg-gray-900"
     >
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4">
         <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
           <Icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
         </div>
-        <Typography variant="h6" fontWeight="800" className="dark:text-white">
+        <Typography variant="h6" fontWeight="600" className="dark:text-white">
           {title}
         </Typography>
       </div>
@@ -52,8 +52,8 @@ const Settings = () => {
   return (
     <Box className="max-w-4xl mx-auto">
       <Typography
-        variant="h4"
-        fontWeight="900"
+        variant="h5"
+        fontWeight="800"
         className="mb-8 tracking-tight dark:text-white"
       >
         System Settings
@@ -86,6 +86,7 @@ const Settings = () => {
                 Default Currency
               </InputLabel>
               <Select
+              size="small"
                 value={currency}
                 label="Default Currency"
                 onChange={(e) => {
@@ -147,7 +148,7 @@ const Settings = () => {
         >
           Danger Zone
         </Typography>
-        <Typography variant="body2" color="text.secondary" className="mb-4">
+        <Typography  variant="body2" color="text.secondary" className="mb-4">
           Once you delete your account, there is no going back. All your
           financial history will be permanently erased.
         </Typography>

@@ -23,7 +23,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 const Profile = () => {
-  const { user, login } = useContext(AuthContext); // Destructure login to update local state
+  const { user, login } = useContext(AuthContext);
   const theme = useTheme();
 
   const [loading, setLoading] = useState(false);
@@ -52,8 +52,6 @@ const Profile = () => {
         name: formData.name,
         email: formData.email,
       });
-
-      // Update the AuthContext so the sidebar/header reflects the new name
       login(res.data);
       showToast("Profile updated successfully!");
     } catch (err) {
@@ -111,14 +109,17 @@ const Profile = () => {
               "&:hover": { bgcolor: "#f5f5f5" },
             }}
           >
-            <CameraIcon style={{ width: 16, height: 16 }} />
+            <CameraIcon
+              className="dark:text-black"
+              style={{ width: 16, height: 16 }}
+            />
           </IconButton>
         </Box>
         <Box>
-          <Typography variant="h4" fontWeight="900" letterSpacing="-1px">
+          <Typography variant="h5" fontWeight="800">
             {user?.name}
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body2" color="text.secondary">
             {user?.email}
           </Typography>
         </Box>
@@ -139,9 +140,9 @@ const Profile = () => {
         </Alert>
       </Snackbar>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2, md: 2 }} rowSpacing={3}>
         {/* Personal Information */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Card
             elevation={0}
             sx={{
@@ -150,8 +151,8 @@ const Profile = () => {
               borderColor: "divider",
             }}
           >
-            <CardContent sx={{ p: 4 }}>
-              <Box display="flex" alignItems="center" gap={1.5} mb={4}>
+            <CardContent sx={{ p: 3 }}>
+              <Box display="flex" alignItems="center" gap={1.5} mb={2}>
                 <UserCircleIcon
                   style={{
                     width: 24,
@@ -159,7 +160,7 @@ const Profile = () => {
                     color: theme.palette.primary.main,
                   }}
                 />
-                <Typography variant="h6" fontWeight="800">
+                <Typography variant="h6" fontWeight="600">
                   Account Details
                 </Typography>
               </Box>
@@ -167,6 +168,7 @@ const Profile = () => {
               <form onSubmit={handleUpdateProfile}>
                 <Box display="flex" flexDirection="column" gap={3}>
                   <TextField
+                    size="small"
                     label="Full Name"
                     variant="outlined"
                     fullWidth
@@ -177,6 +179,7 @@ const Profile = () => {
                     InputProps={{ sx: { borderRadius: 3 } }}
                   />
                   <TextField
+                    size="small"
                     label="Email Address"
                     variant="outlined"
                     fullWidth
@@ -192,7 +195,7 @@ const Profile = () => {
                     disabled={loading}
                     sx={{
                       borderRadius: 3,
-                      py: 1.5,
+                      // py: 1.5,
                       fontWeight: "bold",
                       textTransform: "none",
                     }}
@@ -210,7 +213,7 @@ const Profile = () => {
         </Grid>
 
         {/* Security / Password */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Card
             elevation={0}
             sx={{
@@ -219,8 +222,8 @@ const Profile = () => {
               borderColor: "divider",
             }}
           >
-            <CardContent sx={{ p: 4 }}>
-              <Box display="flex" alignItems="center" gap={1.5} mb={4}>
+            <CardContent sx={{ p: 3 }}>
+              <Box display="flex" alignItems="center" gap={1.5} mb={2}>
                 <KeyIcon
                   style={{
                     width: 24,
@@ -228,7 +231,7 @@ const Profile = () => {
                     color: theme.palette.primary.main,
                   }}
                 />
-                <Typography variant="h6" fontWeight="800">
+                <Typography variant="h6" fontWeight="600">
                   Security
                 </Typography>
               </Box>
@@ -236,6 +239,7 @@ const Profile = () => {
               <form onSubmit={handleChangePassword}>
                 <Box display="flex" flexDirection="column" gap={3}>
                   <TextField
+                    size="small"
                     label="Current Password"
                     type="password"
                     fullWidth
@@ -249,6 +253,7 @@ const Profile = () => {
                     InputProps={{ sx: { borderRadius: 3 } }}
                   />
                   <TextField
+                    size="small"
                     label="New Password"
                     type="password"
                     fullWidth
@@ -264,7 +269,7 @@ const Profile = () => {
                     disabled={loading}
                     sx={{
                       borderRadius: 3,
-                      py: 1.5,
+                      // py: 1.5,
                       fontWeight: "bold",
                       textTransform: "none",
                     }}

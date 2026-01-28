@@ -103,12 +103,12 @@ const CreateAccount = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 550, mx: "auto", py: 2 }}>
+    <Box sx={{ maxWidth: 550, mx: "auto", py: 4 }}>
       <Button
         startIcon={<ArrowLeftIcon className="h-4 w-4" />}
         onClick={() => navigate("/accounts")}
         sx={{
-          // mb: 2,
+          mb: 2,
           textTransform: "none",
           color: "text.secondary",
           fontWeight: 600,
@@ -141,7 +141,7 @@ const CreateAccount = () => {
               <Typography variant="h5" fontWeight="800">
                 New Account
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" mb={2}>
                 Setup your starting balance
               </Typography>
             </Box>
@@ -239,38 +239,41 @@ const CreateAccount = () => {
                   }
                 />
               </Grid>
-              <Grid item xs={12}>
-                <Box display="flex" gap={2} mt={1}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disableElevation
-                    disabled={loading}
-                    sx={{
-                      borderRadius: 3,
-                      fontWeight: "bold",
-                      textTransform: "none",
-                    }}
-                  >
-                    {loading ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      "Create Account"
-                    )}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={() => navigate("/accounts")}
-                    sx={{
-                      borderRadius: 3,
-                      textTransform: "none",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </Box>
-              </Grid>
+
+              <Button
+                fullWidth
+                type="submit"
+                variant="contained"
+                disableElevation
+                disabled={loading}
+                sx={{
+                  borderRadius: 3,
+                  fontWeight: "bold",
+                  textTransform: "none",
+                  bgcolor: `${selectedType?.color}`,
+                  "&:hover": {
+                    bgcolor: `${selectedType?.color}`,
+                    filter: "brightness(0.9)",
+                  },
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Create Account"
+                )}
+              </Button>
+              {/* <Button
+                variant="outlined"
+                onClick={() => navigate("/accounts")}
+                sx={{
+                  borderRadius: 3,
+                  textTransform: "none",
+                  fontWeight: "bold",
+                }}
+              >
+                Cancel
+              </Button> */}
             </Grid>
           </form>
         </CardContent>

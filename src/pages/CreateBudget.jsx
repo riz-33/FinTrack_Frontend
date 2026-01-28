@@ -31,7 +31,7 @@ const categories = [
 
 const CreateBudget = () => {
   const navigate = useNavigate();
-  const { currency } = useContext(CurrencyContext); // Get the current currency symbol
+  const { currency } = useContext(CurrencyContext);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -74,11 +74,16 @@ const CreateBudget = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 600, mx: "auto", mt: 2 }}>
+    <Box sx={{ maxWidth: 500, mx: "auto", py: 4 }}>
       <Button
         startIcon={<ArrowLeftIcon className="h-4 w-4" />}
         onClick={() => navigate("/budgets")}
-        sx={{ mb: 2, textTransform: "none", color: "text.secondary" }}
+        sx={{
+          mb: 2,
+          textTransform: "none",
+          color: "text.secondary",
+          fontWeight: 600,
+        }}
       >
         Back to Budgets
       </Button>
@@ -111,9 +116,10 @@ const CreateBudget = () => {
           </Box>
 
           <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
+            <Grid container spacing={{ xs: 2, md: 2 }} rowSpacing={3}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
+                  size="small"
                   select
                   fullWidth
                   label="Category"
@@ -122,6 +128,7 @@ const CreateBudget = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, category: e.target.value })
                   }
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                   helperText="One budget per category per month"
                 >
                   {categories.map((cat) => (
@@ -132,8 +139,9 @@ const CreateBudget = () => {
                 </TextField>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
+                  size="small"
                   fullWidth
                   label="Monthly Limit"
                   type="number"
@@ -148,6 +156,7 @@ const CreateBudget = () => {
                       </InputAdornment>
                     ),
                   }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                   value={formData.limit}
                   onChange={(e) =>
                     setFormData({ ...formData, limit: e.target.value })
@@ -155,8 +164,9 @@ const CreateBudget = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
+                  size="small"
                   fullWidth
                   label="Budget Period"
                   type="month"
@@ -166,26 +176,25 @@ const CreateBudget = () => {
                     setFormData({ ...formData, month: e.target.value })
                   }
                   InputLabelProps={{ shrink: true }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
                 />
               </Grid>
 
-              <Grid item xs={12} sx={{ mt: 2 }}>
-                <Box display="flex" gap={2}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={loading}
-                    sx={{
-                      flex: 2,
-                      py: 1.5,
-                      borderRadius: 2.5,
-                      fontWeight: "bold",
-                      textTransform: "none",
-                    }}
-                  >
-                    {loading ? <CircularProgress size={24} /> : "Set Budget"}
-                  </Button>
-                  <Button
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={loading}
+                sx={{
+                  flex: 2,
+                  // py: 1.5,
+                  borderRadius: 2.5,
+                  fontWeight: "bold",
+                  textTransform: "none",
+                }}
+              >
+                {loading ? <CircularProgress size={24} /> : "Set Budget"}
+              </Button>
+              {/* <Button
                     variant="outlined"
                     onClick={() => navigate("/budgets")}
                     sx={{
@@ -197,9 +206,7 @@ const CreateBudget = () => {
                     }}
                   >
                     Cancel
-                  </Button>
-                </Box>
-              </Grid>
+                  </Button> */}
             </Grid>
           </form>
         </CardContent>
