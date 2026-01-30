@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -19,6 +20,7 @@ import Settings from "./pages/Settings";
 function App() {
   return (
     <AuthProvider>
+      <Analytics />
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}
