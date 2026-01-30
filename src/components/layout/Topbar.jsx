@@ -15,7 +15,7 @@ import {
   MoonIcon,
   Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
-import Logo from "../../assets/logo3.png";
+import Logo from "../../assets/Logo3.png";
 import { NavLink, Link } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
