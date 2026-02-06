@@ -20,11 +20,17 @@ const EmptyState = ({
         <ChartBarIcon className="h-8 w-8 text-blue-500" />
       </div>
 
-      <Typography variant="h6" className="text-gray-900 font-semibold">
+      <Typography
+        variant="h6"
+        className="text-gray-900 dark:text-white font-semibold"
+      >
         {title}
       </Typography>
 
-      <Typography variant="body2" className="text-gray-500 mt-1 max-w-xs">
+      <Typography
+        variant="body2"
+        className="text-gray-500 dark:text-gray-400 mt-1 max-w-xs"
+      >
         {message}
       </Typography>
 

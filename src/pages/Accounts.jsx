@@ -181,16 +181,23 @@ const Accounts = () => {
   return (
     <Box sx={{ maxWidth: 1400, mx: "auto" }}>
       <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={4}
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: "space-between",
+          alignItems: { xs: "center", sm: "center" },
+          gap: 2,
+          mb: 4,
+        }}
       >
         <Box>
           <Typography
             variant="h4"
             fontWeight="700"
-            sx={{ letterSpacing: "-0.5px" }}
+            sx={{
+              letterSpacing: "-0.5px",
+              textAlign: { xs: "center", sm: "start" },
+            }}
           >
             Accounts
           </Typography>
@@ -298,11 +305,11 @@ const Accounts = () => {
 
                     <Typography
                       variant="h6"
-                      fontWeight="800"
+                      fontWeight="700"
                       noWrap
                       sx={{ mb: 0.5 }}
                     >
-                      {acc.name}
+                      {acc.name.toUpperCase()}
                     </Typography>
 
                     <Box display="flex" alignItems="center" gap={1} mb={2}>

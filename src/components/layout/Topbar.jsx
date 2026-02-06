@@ -97,15 +97,16 @@ export default function Topbar() {
             {/* Currency Toggle */}
             <button
               onClick={toggleCurrency}
-              className="px-2 py-1 text-[10px] sm:text-xs font-bold border rounded dark:text-white dark:border-gray-600"
+              className="cursor-pointer px-2 py-1 text-[10px] sm:text-xs font-bold border rounded dark:text-white dark:border-gray-600"
             >
               {currency}
             </button>
 
             {/* Profile Menu */}
             <Menu as="div" className="relative ml-2">
-              <MenuButton className="flex rounded-full bg-blue-500 text-sm focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+              <MenuButton className="cursor-pointer flex rounded-full bg-blue-500 text-sm focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 <Avatar
+                  src={user?.avatar || ""}
                   sx={{
                     width: 32,
                     height: 32,

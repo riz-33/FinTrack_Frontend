@@ -117,10 +117,14 @@ const Budgets = () => {
     <Box sx={{ mx: "auto" }}>
       {/* Header & Controls */}
       <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="flex-start"
-        mb={4}
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: "space-between",
+          alignItems: { xs: "center", sm: "center" },
+          gap: 2,
+          mb: 4,
+        }}
       >
         <Box>
           <Typography
@@ -190,7 +194,7 @@ const Budgets = () => {
         <Grid
           container
           spacing={{ xs: 2, md: 2 }}
-          columns={{ xs: 4, sm: 8, md: 12 }}
+          columns={{ xs: 2, sm: 12, md: 12 }}
           mb={3}
         >
           {budgets.map((budget) => {

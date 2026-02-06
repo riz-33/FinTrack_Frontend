@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
 import {
@@ -23,9 +23,12 @@ import {
 } from "@heroicons/react/24/outline";
 
 const Profile = () => {
+  const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
   const { user, login } = useContext(AuthContext);
   const theme = useTheme();
-
+  const fileInputRef = useRef(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -39,6 +42,16 @@ const Profile = () => {
     currentPassword: "",
     newPassword: "",
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name,
+        email: user.email,
+      }));
+    }
+  }, [user]);
 
   const showToast = (msg, type = "success") => {
     setSnackbar({ open: true, msg, type });
@@ -81,15 +94,59 @@ const Profile = () => {
     }
   };
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      showToast("Only JPG, PNG or WEBP images allowed", "error");
+      return;
+    }
+
+    if (file.size > MAX_SIZE) {
+      showToast("Image must be less than 2MB", "error");
+      return;
+    }
+
+    setAvatarUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "fintrack_users");
+
+      const cloudRes = await fetch(
+        "https://api.cloudinary.com/v1_1/dxzqtndlo/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      const cloudData = await cloudRes.json();
+      showToast(JSON.stringify(cloudData));
+      const res = await api.put("/auth/update-avatar", {
+        avatar: cloudData.secure_url,
+      });
+      login(res.data);
+      showToast("Profile picture updated!");
+    } catch (err) {
+      showToast("Avatar upload failed", "error");
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   return (
     <Box sx={{ maxWidth: 1000, mx: "auto", p: { xs: 2, md: 4 } }}>
       {/* 1. Profile Header */}
       <Box display="flex" alignItems="center" gap={3} mb={5}>
         <Box position="relative">
           <Avatar
+            src={user?.avatar || ""}
             sx={{
-              width: 100,
-              height: 100,
+              width: 150,
+              height: 150,
               bgcolor: "primary.main",
               fontSize: "2.5rem",
               fontWeight: "bold",
@@ -97,9 +154,33 @@ const Profile = () => {
             }}
           >
             {user?.name?.charAt(0).toUpperCase()}
+            {avatarUploading && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  display: "flex",
+                  bgcolor: "rgba(0,0,0,0.3)",
+                  width: "100%",
+                  height: "100%",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <CircularProgress size={30} color="inherit" />
+              </Box>
+            )}
           </Avatar>
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            ref={fileInputRef}
+            onChange={handleAvatarUpload}
+          />
           <IconButton
             size="small"
+            onClick={() => fileInputRef.current.click()}
+            disabled={avatarUploading}
             sx={{
               position: "absolute",
               bottom: 0,

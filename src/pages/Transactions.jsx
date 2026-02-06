@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -34,6 +34,7 @@ import {
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import EmptyState from "../components/common/EmptyState";
+import { CurrencyContext } from "../context/ThemeContext";
 
 const categoriesExpense = [
   "Food",
@@ -56,6 +57,7 @@ const currencySymbols = {
 };
 
 const Transactions = () => {
+  const { formatValue } = useContext(CurrencyContext);
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -268,10 +270,14 @@ const Transactions = () => {
     <Box sx={{ maxWidth: 1400, mx: "auto" }}>
       {/* Header Section */}
       <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="flex-start"
-        mb={2}
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: "space-between",
+          alignItems: { xs: "center", sm: "center" },
+          gap: 2,
+          mb: 4,
+        }}
       >
         <Box>
           <Typography variant="h4" fontWeight="700" color="text.primary">
@@ -446,10 +452,10 @@ const Transactions = () => {
                             fontWeight="700"
                             color="text.primary"
                           >
-                            {t.description}
+                            {t.description.toUpperCase() || "No Description"}
                           </Typography>
                           <Typography variant="caption" color="textSecondary">
-                            {t.accountId?.name ||
+                            {t.accountId?.name?.toUpperCase() ||
                               (t.type === "transfer"
                                 ? "Internal Transfer"
                                 : "N/A")}
@@ -501,8 +507,7 @@ const Transactions = () => {
                                 : t.type === "transfer"
                                   ? ""
                                   : "-"}{" "}
-                              {symbol}
-                              {t.amount.toLocaleString()}
+                              {formatValue(t.amount)}
                             </span>
                             <Typography
                               variant="caption"
@@ -649,7 +654,8 @@ const Transactions = () => {
                     >
                       {accounts.map((acc) => (
                         <MenuItem key={acc._id} value={acc._id}>
-                          {acc.name} ({currencySymbols[acc.currency] || ""}
+                          {acc.name.toUpperCase()} (
+                          {currencySymbols[acc.currency] || ""}
                           {acc.balance.toLocaleString()})
                         </MenuItem>
                       ))}
@@ -682,7 +688,8 @@ const Transactions = () => {
 
                         .map((acc) => (
                           <MenuItem key={acc._id} value={acc._id}>
-                            {acc.name} ({currencySymbols[acc.currency] || ""}
+                            {acc.name.toUpperCase()} (
+                            {currencySymbols[acc.currency] || ""}
                             {acc.balance.toLocaleString()})
                           </MenuItem>
                         ))}
@@ -711,7 +718,8 @@ const Transactions = () => {
                     >
                       {accounts.map((acc) => (
                         <MenuItem key={acc._id} value={acc._id}>
-                          {acc.name} ({currencySymbols[acc.currency] || ""}
+                          {acc.name.toUpperCase()} (
+                          {currencySymbols[acc.currency] || ""}
                           {acc.balance.toLocaleString()})
                         </MenuItem>
                       ))}

@@ -243,8 +243,9 @@ const CreateTransaction = () => {
                     >
                       {accounts.map((acc) => (
                         <MenuItem key={acc._id} value={acc._id}>
-                          {acc.name} ({currencySymbols[acc.currency]}
-                          {acc.balance})
+                          {acc.name.toUpperCase()} (
+                          {currencySymbols[acc.currency] || ""}
+                          {acc.balance.toLocaleString()})
                         </MenuItem>
                       ))}
                     </TextField>
@@ -269,7 +270,9 @@ const CreateTransaction = () => {
                         .filter((a) => a._id !== formData.fromAccountId)
                         .map((acc) => (
                           <MenuItem key={acc._id} value={acc._id}>
-                            {acc.name}
+                            {acc.name.toUpperCase()} (
+                            {currencySymbols[acc.currency] || ""}
+                            {acc.balance.toLocaleString()})
                           </MenuItem>
                         ))}
                     </TextField>
@@ -292,7 +295,9 @@ const CreateTransaction = () => {
                     >
                       {accounts.map((acc) => (
                         <MenuItem key={acc._id} value={acc._id}>
-                          {acc.name}
+                          {acc.name.toUpperCase()} (
+                          {currencySymbols[acc.currency] || ""}
+                          {acc.balance.toLocaleString()})
                         </MenuItem>
                       ))}
                     </TextField>
