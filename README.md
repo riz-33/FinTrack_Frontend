@@ -131,7 +131,7 @@ npm run dev
 
 | Transactions Page                                               | Budgets Page                                          |
 | --------------------------------------------------------------- | ----------------------------------------------------- |
-| ![Transactions Screenshot](public/screenshots/transactions.PNG) | ![Budgets Screenshot](public/screenshots/Budgets.PNG) |
+| ![Transactions Screenshot](public/screenshots/transactions.PNG) | ![Budgets Screenshot](public/screenshots/budgets.PNG) |
 
 ---
 
